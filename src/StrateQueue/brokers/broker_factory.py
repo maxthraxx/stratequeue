@@ -108,7 +108,7 @@ class BrokerFactory:
             raise ValueError(f"Unsupported broker type '{broker_type}'. Available: {available}")
 
         broker_class = cls._brokers[broker_type]
-        logger.info(f"Creating {broker_type} broker instance")
+        logger.debug(f"Creating {broker_type} broker instance")
 
         # Auto-generate config from environment if not provided
         if config is None:

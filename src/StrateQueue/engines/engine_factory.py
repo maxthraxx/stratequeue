@@ -106,7 +106,7 @@ class EngineFactory:
             raise ValueError(f"Unsupported engine type '{engine_type}'. Available: {available}")
         
         engine_class = cls._engines[engine_type]
-        logger.info(f"Creating {engine_type} engine instance")
+        logger.debug(f"Creating {engine_type} engine instance")
         
         return engine_class()
     

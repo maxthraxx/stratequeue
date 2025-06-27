@@ -67,7 +67,7 @@ class DataManager:
 
     async def initialize_historical_data(self):
         """Initialize historical data for all symbols"""
-        logger.info("Fetching initial historical data...")
+        logger.debug("Fetching initial historical data...")
 
         # Start real-time feed first so we can get live data even if historical fails
         self.data_ingester.start_realtime_feed()

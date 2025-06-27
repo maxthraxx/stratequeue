@@ -291,11 +291,11 @@ class LiveTradingSystem:
 
         # Log system configuration
         strategy_info = self.trading_processor.get_strategy_info()
-        logger.info(f"Strategy: {strategy_info}")
-        logger.info(f"Symbols: {', '.join(self.symbols)}")
-        logger.info(f"Data Source: {self.data_source}")
-        logger.info(f"Granularity: {self.granularity}")
-        logger.info(f"Lookback Period: {self.lookback_period} bars")
+        logger.debug(f"Strategy: {strategy_info}")
+        logger.debug(f"Symbols: {', '.join(self.symbols)}")
+        logger.debug(f"Data Source: {self.data_source}")
+        logger.debug(f"Granularity: {self.granularity}")
+        logger.debug(f"Lookback Period: {self.lookback_period} bars")
 
         # Display startup banner
         self.display_manager.display_startup_banner(
@@ -319,7 +319,7 @@ class LiveTradingSystem:
         try:
             granularity_obj = parse_granularity(self.granularity)
             cycle_interval = granularity_obj.to_seconds()
-            logger.info(f"Trading cycle interval set to {cycle_interval} seconds based on granularity {self.granularity}")
+            logger.debug(f"Trading cycle interval set to {cycle_interval} seconds based on granularity {self.granularity}")
         except Exception as e:
             logger.warning(f"Could not parse granularity {self.granularity}: {e}. Using default 5-second interval")
             cycle_interval = 999_999
@@ -429,7 +429,7 @@ class LiveTradingSystem:
                                 success = False
 
                             if success:
-                                logger.info(f"✅ Executed {signal.signal.value} for {symbol} [{strategy_id}]")
+                                logger.debug(f"✅ Executed {signal.signal.value} for {symbol} [{strategy_id}]")
                             else:
                                 logger.warning(f"❌ Failed to execute {signal.signal.value} for {symbol} [{strategy_id}]")
         else:
@@ -447,7 +447,7 @@ class LiveTradingSystem:
                         success = False
 
                     if success:
-                        logger.info(f"✅ Executed {signal.signal.value} for {symbol}")
+                        logger.debug(f"✅ Executed {signal.signal.value} for {symbol}")
                     else:
                         logger.warning(f"❌ Failed to execute {signal.signal.value} for {symbol}")
 

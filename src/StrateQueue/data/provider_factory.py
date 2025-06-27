@@ -130,7 +130,7 @@ class DataProviderFactory:
             raise ValueError(f"Unsupported data provider type '{provider_type}'. Available: {available}")
 
         provider_class = cls._providers[provider_type]
-        logger.info(f"Creating {provider_type} data provider instance")
+        logger.debug(f"Creating {provider_type} data provider instance")
 
         # Auto-generate config from environment if not provided
         if config is None:

@@ -723,7 +723,7 @@ class AlpacaBroker(BaseBroker):
                 TrailingStopOrderRequest,
             )
 
-            logger.info(f"🔄 Processing {signal.signal.value} order for symbol: {symbol}")
+            logger.debug(f"🔄 Processing {signal.signal.value} order for symbol: {symbol}")
 
             # Calculate position size using broker-independent position sizer
             if signal.size is not None and signal.size > 0:
@@ -732,11 +732,11 @@ class AlpacaBroker(BaseBroker):
                     account_info = self.get_account_info()
                     account_value = account_info.total_value if account_info else 10000.0
                     position_size = signal.size * account_value
-                    logger.info(f"💰 Using strategy-specified position size: {signal.size*100:.1f}% = ${position_size:.2f}")
+                    logger.debug(f"💰 Using strategy-specified position size: {signal.size*100:.1f}% = ${position_size:.2f}")
                 else:
                     # Strategy has specified the exact dollar size to use
                     position_size = signal.size
-                    logger.info(f"💰 Using strategy-specified position size: ${position_size:.2f}")
+                    logger.debug(f"💰 Using strategy-specified position size: ${position_size:.2f}")
             else:
                 # Use position sizer to calculate appropriate size
                 account_info = self.get_account_info()
@@ -750,7 +750,7 @@ class AlpacaBroker(BaseBroker):
                     portfolio_manager=self.portfolio_manager,
                     account_value=account_value
                 )
-                logger.info(f"💰 Position size calculated by {self.position_sizer.strategy.__class__.__name__}: ${position_size:.2f}")
+                logger.debug(f"💰 Position size calculated by {self.position_sizer.strategy.__class__.__name__}: ${position_size:.2f}")
 
             # Determine order side
             is_buy_signal = signal.signal in [
@@ -819,22 +819,22 @@ class AlpacaBroker(BaseBroker):
                 if is_crypto and signal.signal == SignalType.BUY:
                     # For crypto market buys, use notional amount (USD value)
                     notional_amount = round(position_size, 2)
-                    logger.info(
+                    logger.debug(
                         f"📊 Creating crypto buy order: ${notional_amount:.2f} notional of {symbol}"
                     )
                 else:
                     # For all other buys (stock or crypto limit), calculate quantity
                     quantity = position_size / signal.price if signal.price else 1
-                    logger.info(
+                    logger.debug(
                         f"📊 Creating buy order: {quantity:.6f} {symbol} @ ${signal.price:.2f}"
                     )
             else:
                 # For sell orders, get current position quantity
                 try:
-                    logger.info(f"🔍 Checking current position for {symbol}")
+                    logger.debug(f"🔍 Checking current position for {symbol}")
                     position = self.trading_client.get_open_position(symbol)
                     quantity = abs(float(position.qty))  # Ensure positive quantity
-                    logger.info(f"📍 Found position: {quantity} shares/units of {symbol}")
+                    logger.debug(f"📍 Found position: {quantity} shares/units of {symbol}")
                 except Exception as e:
                     logger.error(f"❌ No position found for {symbol}: {e}")
                     return False, None
@@ -903,17 +903,12 @@ class AlpacaBroker(BaseBroker):
                 )
                 return False, None
 
-            # Submit the order with detailed logging
-            logger.info(f"🚀 Submitting {signal.signal.value} order to Alpaca: {order_request}")
+            # Submit the order with concise logging
+            logger.debug(f"🚀 Submitting {signal.signal.value} order to Alpaca: {order_request}")
             order = self.trading_client.submit_order(order_request)
-            logger.info("✅ Order submitted successfully!")
-            logger.info(f"   Order ID: {order.id}")
-            logger.info(f"   Symbol: {order.symbol}")
-            logger.info(f"   Side: {order.side}")
-            logger.info(f"   Type: {order.order_type}")
-            logger.info(f"   Status: {order.status}")
+            logger.info(f"✅ Order submitted: {order.side.value} {order.symbol} (ID: {order.id})")
             if order_class:
-                logger.info(f"   Order Class: {order_class}")
+                logger.debug(f"   Order Class: {order_class}")
 
             # Update portfolio manager if in multi-strategy mode
             if self.portfolio_manager and strategy_id:

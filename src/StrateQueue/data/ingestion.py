@@ -19,7 +19,9 @@ from .sources import BaseDataIngestion, CoinMarketCapDataIngestion, MarketData, 
 
 load_dotenv()
 
-logging.basicConfig(level=logging.INFO)
+# Only configure logging if not already configured
+if not logging.getLogger().handlers:
+    logging.basicConfig(level=logging.WARNING)
 logger = logging.getLogger(__name__)
 
 
