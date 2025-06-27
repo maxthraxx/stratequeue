@@ -1,16 +1,16 @@
 # StrateQueue
 
-[![PyPI version](https://badge.fury.io/py/stratequeue.svg)](https://badge.fury.io/py/stratequeue)
+[![PyPI version](https://badge.fury.io/py/stratequeue.svg?refresh=1)](https://badge.fury.io/py/stratequeue)
 [![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
 [![License: AGPL-3.0](https://img.shields.io/badge/License-AGPL--3.0-yellow.svg)](https://github.com/StrateQueue/StrateQueue/blob/main/LICENSE)
 [![Downloads](https://pepy.tech/badge/stratequeue)](https://pepy.tech/project/stratequeue)
-[![GitHub stars](https://img.shields.io/github/stars/StrateQueue/StrateQueue)](https://github.com/StrateQueue/StrateQueue/stargazers)
+[![GitHub stars](https://img.shields.io/github/stars/StrateQueue/StrateQueue?refresh=1)](https://github.com/StrateQueue/StrateQueue/stargazers)
 
 📖 **[Documentation](https://stratequeue.com/docs)** | 🚀 **[Quick Start Guide](https://stratequeue.com/docs/quickstart)** | 💬 **[Community](https://discord.gg/H4hWAXJYqX)**
 
 > **The fastest way from backtest to live trading**
 
-StrateQueue supports Backtesting.py, Backtrader, VectorBT and Zipline-Reloaded. More coming soon.
+Backtest to live in seconds. StrateQueue lets you deploy any Python trading strategy (**backtrader**, **zipline**, **vectorbt**, **backtrader**, etc.) to any broker with one command: ```stratequeue deploy --strategy ./your_script.py```. No code changes.
 
 ## 📑 Table of Contents
 - [StrateQueue](#stratequeue)
@@ -47,7 +47,10 @@ class SMAStrategy(Strategy):
 ### Deploy to live trading:
 ```
 pip install stratequeue
-stratequeue deploy --strategy my_sma_strategy.py --symbol AAPL
+stratequeue deploy \
+  --strategy examples/strategies/backtestingpy/sma.py \
+  --symbol AAPL \
+  --timeframe 1m
 ```
 
 ![Quick Start Demo](examples/vhs/quick-start.gif)
@@ -127,7 +130,7 @@ stratequeue webui
 
 ## Star History
 
-[![Star History Chart](https://api.star-history.com/svg?repos=stratequeue/stratequeue&type=Timeline)](https://www.star-history.com/#stratequeue/stratequeue&Timeline)
+[![Star History Chart](https://api.star-history.com/svg?repos=stratequeue/stratequeue&type=Timeline?refresh=1)](https://www.star-history.com/#stratequeue/stratequeue&Timeline)
 
 ## ⚠️ Disclaimer – No Investment Advice
 
