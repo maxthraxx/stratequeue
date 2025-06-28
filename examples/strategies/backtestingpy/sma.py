@@ -5,8 +5,17 @@ from backtesting.test import SMA
 
 
 class SmaCross(Strategy):
-    n1 = 1
-    n2 = 3
+    """Simple 1-/3-period SMA crossover ensuring parity with other engine
+    implementations.
+
+    Rules:
+    • When the 1-period SMA (current price) crosses *above* the 3-period SMA → BUY.
+    • When the 3-period SMA crosses back above the 1-period SMA → CLOSE any open
+      long position (no shorting).
+    """
+
+    n1 = 1  # fast SMA
+    n2 = 3  # slow SMA
 
     def init(self):
         close = self.data.Close
@@ -14,10 +23,13 @@ class SmaCross(Strategy):
         self.sma2 = self.I(SMA, close, self.n2)
 
     def next(self):
+        # Price crosses above → enter long (only if not already in position)
         if crossover(self.sma1, self.sma2):
-            self.position.close()
-            self.buy(size=0.1)  # Use 10% of available capital
+            if not self.position:
+                self.buy(size=0.1)  # Use 10% of available capital
+
+        # Price crosses below → exit long if held
         elif crossover(self.sma2, self.sma1):
-            self.position.close()
-            self.sell()
+            if self.position:
+                self.position.close()
 

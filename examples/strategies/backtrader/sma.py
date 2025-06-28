@@ -12,8 +12,8 @@ class SMAStrategy(bt.Strategy):
     """Simple Moving Average Crossover Strategy"""
     
     params = (
-        ('fast_period', 10),
-        ('slow_period', 20),
+        ('fast_period', 1),   # fast SMA (1 bar)
+        ('slow_period', 3),   # slow SMA (3 bars)
     )
     
     def __init__(self):
@@ -29,11 +29,13 @@ class SMAStrategy(bt.Strategy):
         self.crossover = bt.indicators.CrossOver(self.fast_sma, self.slow_sma)
     
     def next(self):
-        # Check for crossover signals
-        if self.crossover > 0:  # Fast SMA crosses above slow SMA
+        # Fast SMA crosses above slow SMA → enter long if not already in position
+        if self.crossover > 0 and not self.position:
             self.buy()
-        elif self.crossover < 0:  # Fast SMA crosses below slow SMA
-            self.sell()
+
+        # Fast SMA crosses below slow SMA → close long position if it exists
+        elif self.crossover < 0 and self.position:
+            self.close()
 
 
 # Example usage with Backtrader directly (for testing)
