@@ -383,6 +383,8 @@ class AlpacaBroker(BaseBroker):
 
             result = []
             for order in orders:
+                limit_p = getattr(order, "limit_price", getattr(order, "price", None))
+                stop_p = getattr(order, "stop_price", None)
                 result.append(
                     {
                         "id": order.id,
@@ -392,6 +394,8 @@ class AlpacaBroker(BaseBroker):
                         "order_type": order.order_type.value,
                         "qty": float(order.qty) if order.qty else None,
                         "notional": float(order.notional) if order.notional else None,
+                        "limit_price": float(limit_p) if limit_p else None,
+                        "stop_price": float(stop_p) if stop_p else None,
                         "filled_qty": float(order.filled_qty) if order.filled_qty else 0,
                         "status": order.status.value,
                         "created_at": order.created_at,
@@ -583,6 +587,10 @@ class AlpacaBroker(BaseBroker):
             logger.info(f"Successfully cancelled Alpaca order: {order_id}")
             return True
         except APIError as e:
+            msg = str(e).lower()
+            if "already" in msg and any(w in msg for w in ("filled", "canceled", "cancelled")):
+                logger.info(f"Alpaca order {order_id} already finalised: {e}. Treating as success.")
+                return True
             logger.error(f"Error cancelling Alpaca order {order_id}: {e}")
             return False
 
@@ -601,6 +609,8 @@ class AlpacaBroker(BaseBroker):
 
         try:
             order = self.trading_client.get_order_by_id(order_id)
+            limit_p = getattr(order, "limit_price", getattr(order, "price", None))
+            stop_p = getattr(order, "stop_price", None)
             return {
                 "id": order.id,
                 "client_order_id": order.client_order_id,
@@ -612,6 +622,8 @@ class AlpacaBroker(BaseBroker):
                 "status": order.status.value,
                 "created_at": order.created_at,
                 "updated_at": order.updated_at,
+                "limit_price": float(limit_p) if limit_p else None,
+                "stop_price": float(stop_p) if stop_p else None,
             }
         except APIError as e:
             logger.error(f"Error getting Alpaca order status {order_id}: {e}")
