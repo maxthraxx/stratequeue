@@ -6,7 +6,7 @@
 [![Downloads](https://pepy.tech/badge/stratequeue)](https://pepy.tech/project/stratequeue)
 [![GitHub stars](https://img.shields.io/github/stars/StrateQueue/StrateQueue?refresh=1)](https://github.com/StrateQueue/StrateQueue/stargazers)
 
-📖 **[Documentation](https://stratequeue.com/docs)** | 🚀 **[Quick Start Guide](https://stratequeue.com/docs/quickstart)** | 💬 **[Community](https://discord.gg/H4hWAXJYqX)**
+📖 **[Documentation](https://stratequeue.com/docs)** | 🚀 **[Quick Start Guide](https://www.stratequeue.com/docs/quick-start)** | 💬 **[Community](https://discord.gg/H4hWAXJYqX)**
 
 > **The fastest way from backtest to live trading**
 
