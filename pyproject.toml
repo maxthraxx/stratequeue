@@ -48,7 +48,7 @@ dependencies = [
     "uvicorn[standard]>=0.24.0",
     "python-multipart",
     "rich>=13.0.0",
-    "yfinance==0.2.63"
+    "yfinance==0.2.64"
 ]
 
 [project.optional-dependencies]
