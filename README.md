@@ -104,7 +104,7 @@ stratequeue webui
 | └─ Zipline-Reloaded | ✅ Implemented |
 | **Brokers** | |
 | ├─ Alpaca | ✅ Implemented |
-| ├─ Interactive Brokers | 🟡 Experimental |
+| ├─ Interactive Brokers | ✅ Implemented |
 | ├─ Kraken | ❌ Implemented |
 | └─ Binance | ❌ Coming Soon |
 | **Data Providers** | |

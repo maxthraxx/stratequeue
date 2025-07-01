@@ -38,6 +38,12 @@ class _FakeOrder:  # noqa: D401 – simple data holder
         self.notional = None  # type: ignore[assignment]
         self.filled_qty = 0
         self.status = types.SimpleNamespace(value="accepted")
+        # ADD start
+        # Pricing helpers – AlpacaBroker may read these directly
+        self.limit_price = price  # present for LIMIT / STOP_LIMIT orders
+        self.stop_price = None
+        self.price = price  # fallback used by broker when limit_price absent
+        # ADD end
         now = _dt.datetime.utcnow()
         self.created_at = self.updated_at = now
 
@@ -62,6 +68,11 @@ class _FakeAlpacaClient:  # noqa: D401 – stub class
             portfolio_value="100000",
             cash="50000",
             daytrade_count=0,
+            # ADD start – extra fields accessed by AlpacaBroker
+            buying_power="50000",
+            pattern_day_trader=False,
+            currency="USD",
+            # ADD end
         )
 
     # ---------------------------------------------------------------------
@@ -95,9 +106,25 @@ class _FakeAlpacaClient:  # noqa: D401 – stub class
     def cancel_all_orders(self, *_: Any, **__: Any):  # noqa: D401 – stub
         self._orders.clear()
 
-    def replace_order_by_id(self, *_: Any, **__: Any):  # noqa: D401 – stub
-        # Simplified: just return True
-        return True
+    # ADD start – alias used by AlpacaBroker.cancel_all_orders
+    def cancel_orders(self, *_: Any, **__: Any):  # noqa: D401 – stub
+        # Real SDK name; delegate to the existing helper
+        self.cancel_all_orders()
+
+    # ADD end
+
+    def replace_order_by_id(self, order_id: str, replace_request=None, *_: Any, **__: Any):  # noqa: D401 – stub
+        # Simplified: update known mutable fields on the target order
+        order = self.get_order_by_id(order_id)
+        if order is None:
+            return False
+        if replace_request is not None:
+            # Copy over attributes the broker may set (limit_price, stop_price, qty)
+            for attr in ("limit_price", "stop_price", "qty", "price"):
+                if hasattr(replace_request, attr):
+                    setattr(order, attr, getattr(replace_request, attr))
+                    order.updated_at = _dt.datetime.utcnow()
+        return order
 
     # Simplified positions helper
     def get_open_position(self, _symbol: str):  # noqa: D401 – stub
@@ -105,6 +132,12 @@ class _FakeAlpacaClient:  # noqa: D401 – stub class
 
     def close_all_positions(self, *_: Any, **__: Any):  # noqa: D401 – stub
         self._orders.clear()
+
+    # ADD start – positions list helper required by broker.get_positions
+    def get_all_positions(self, *_: Any, **__: Any):  # noqa: D401 – stub
+        # Return empty list (no open positions) for simplicity
+        return []
+    # ADD end
 
 
 # ---------------------------------------------------------------------------
@@ -184,6 +217,14 @@ sys.modules["alpaca.trading"].requests = req_mod
 sys.modules["alpaca"].common = sys.modules["alpaca.common"]
 sys.modules["alpaca.common"].exceptions = exc_mod
 
+# ADD start – flip flags in already-imported StrateQueue Alpaca modules
+for _mn, _m in list(sys.modules.items()):
+    if _mn.startswith("StrateQueue.brokers.Alpaca") and hasattr(_m, "ALPACA_AVAILABLE"):
+        _m.ALPACA_AVAILABLE = True  # ensure broker uses stub SDK
+        setattr(_m, "TradingClient", _FakeAlpacaClient)
+        setattr(_m, "APIError", _FakeAPIError)
+# ADD end
+
 # ---------------------------------------------------------------------------
 # Optional: a pytest *autouse* fixture that just refreshes internal order list
 #           after each test so state never leaks between tests.
@@ -194,13 +235,30 @@ import pytest  # noqa: E402 – after sys.modules patch
 
 @pytest.fixture(autouse=True)
 def _reset_fake_alpaca_client_state():
+    # PRE: guarantee broker module still exports the fake symbols (another test
+    # might have removed or monkey-patched them).
+    import sys as _sys  # local import
+
+    _mod_name = "StrateQueue.brokers.Alpaca.alpaca_broker"
+    if _mod_name in _sys.modules:
+        _ab = _sys.modules[_mod_name]
+        setattr(_ab, "TradingClient", _FakeAlpacaClient)
+        setattr(_ab, "APIError", _FakeAPIError)
+
     yield
     # After each test, wipe orders from every instantiated fake client to ensure
     # full isolation between cases (important when the same broker instance is
     # reused by different tests via fixtures or parameterisation).
 
+    # 1) Clear orders on every existing fake client instance ----------------
     for obj in gc.get_objects():
-        # Using isinstance is safe because every stub instance is of the exact
-        # class defined above (we do not expect subclasses).
         if isinstance(obj, _FakeAlpacaClient):
-            obj._orders.clear() 
+            obj._orders.clear()
+
+    # 2) Ensure the AlpacaBroker module still points at the fake TradingClient
+    if _mod_name in _sys.modules:
+        _ab = _sys.modules[_mod_name]
+        if not hasattr(_ab, "TradingClient"):
+            setattr(_ab, "TradingClient", _FakeAlpacaClient)
+        if not hasattr(_ab, "APIError"):
+            setattr(_ab, "APIError", _FakeAPIError) 
