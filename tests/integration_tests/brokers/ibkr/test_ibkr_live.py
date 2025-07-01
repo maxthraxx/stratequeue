@@ -74,10 +74,14 @@ _SKIP_REASON = (
 pytestmark = pytest.mark.live_ibkr
 
 try:
-    from StrateQueue.brokers.IBKR.ibkr_broker import IBKRBroker
+    from StrateQueue.brokers.IBKR.ibkr_broker import IBKRBroker, IB_INSYNC_AVAILABLE
     from StrateQueue.brokers.broker_base import OrderSide, OrderType
 except ImportError as exc:  # pragma: no cover
     pytest.skip(f"Cannot import IBKRBroker – {exc}", allow_module_level=True)
+
+# Skip if ib_insync is not available
+if not IB_INSYNC_AVAILABLE:
+    pytest.skip("ib_insync not installed. Install with: pip install stratequeue[ibkr]", allow_module_level=True)
 
 if not (_IBKR_ENV_LIVE or IB_PORT == 7497):
     pytest.skip(_SKIP_REASON, allow_module_level=True)

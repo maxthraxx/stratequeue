@@ -45,6 +45,14 @@ class _FakeTrade:  # noqa: D401 – mirrors minimal ib_insync.Trade API
             lastFillPrice=0.0,
         )
 
+        # ADD start – minimal helper used by AsyncHelper.wait_for_order_completion
+        def _is_done() -> bool:  # noqa: D401 – match ib_insync.Trade API
+            return self.orderStatus.status in {"Filled", "Cancelled", "ApiCancelled"}
+
+        # Bind as method so callers can call trade.isDone()
+        self.isDone = _is_done  # type: ignore[method-assign]
+        # ADD end
+
 
 # ---------------------------------------------------------------------------
 # Fake IB client – enough surface for Broker & Manager classes.
@@ -78,7 +86,19 @@ class _FakeIB:  # noqa: D401 – stub client
                 value="100000",
                 currency="USD",
                 account="DU123456",
-            )
+            ),
+            SimpleNamespace(
+                tag="BuyingPower",
+                value="200000",
+                currency="USD",
+                account="DU123456",
+            ),
+            SimpleNamespace(
+                tag="TotalCashValue",
+                value="50000",
+                currency="USD",
+                account="DU123456",
+            ),
         ]
 
     def positions(self):  # noqa: D401 – PositionManager expects an iterable
@@ -89,11 +109,68 @@ class _FakeIB:  # noqa: D401 – stub client
         # Allocate incremental orderId and wrap into _FakeTrade
         order.orderId = len(self._trades) + 1
         trade = _FakeTrade(order)
+
+        # Decide immediate status based on order type – market orders fill instantly
+        otype = getattr(order, "orderType", "MKT").upper()
+        if otype == "MKT":
+            # Determine quantity (shares or cashQty fallback)
+            qty = (
+                getattr(order, "totalQuantity", 0)
+                or getattr(order, "cashQty", 0)
+                or getattr(order, "quantity", 0)
+                or 0
+            )
+            trade.orderStatus.status = "Filled"
+            trade.orderStatus.filled = qty
+            trade.orderStatus.remaining = 0
+            # Provide dummy fill price so avg/last readouts are non-zero
+            trade.orderStatus.avgFillPrice = 100.0
+            trade.orderStatus.lastFillPrice = 100.0
+        else:
+            # Limit / other order types stay working
+            trade.orderStatus.status = "Submitted"
+
         self._trades.append(trade)
         return trade
 
     def trades(self):  # noqa: D401 – OrderManager scans this
         return self._trades
+
+    # ADD start – helpers required by broker & async utils
+    def cancelOrder(self, order):  # noqa: D401 – mimic real API
+        # Mark the matching trade as cancelled (no effect if not found)
+        for tr in self._trades:
+            if tr.order is order:
+                tr.orderStatus.status = "Cancelled"
+                tr.orderStatus.remaining = 0
+                break
+
+    # Alias used by some call-sites
+    cancel_orders = cancelOrder  # type: ignore[method-assign]
+
+    def openTrades(self):  # noqa: D401 – subset of trades still open
+        return [
+            tr
+            for tr in self._trades
+            if tr.orderStatus.status in {"Submitted", "PreSubmitted"}
+        ]
+
+    def waitOnUpdate(self, *_a, **_kw):  # noqa: D401 – stubbed event loop helper
+        """Synchronisation no-op – real ib_insync blocks until update; tests proceed instantly."""
+        pass
+
+    # Market scanner – used by contracts.detect_security_type_from_ibkr
+    def reqMatchingSymbols(self, symbol: str):  # noqa: D401
+        """Return a minimal list mimicking IB's ContractDescription objects."""
+        contract = SimpleNamespace(
+            symbol=symbol.upper(),
+            secType="STK",  # default to stock for tests
+            exchange="SMART",
+            currency="USD",
+            primaryExchange="NASDAQ",
+        )
+        return [SimpleNamespace(contract=contract, derivativeSecTypes=[])]
+    # ADD end
 
 
 # ---------------------------------------------------------------------------
@@ -122,6 +199,16 @@ sys.modules.update(
         "ib_insync.util": ib_pkg.util,
     }
 )
+
+# ADD start – flip flags in already-imported StrateQueue IBKR modules
+for _mn, _m in list(sys.modules.items()):
+    if _mn.startswith("StrateQueue.brokers.IBKR") and hasattr(_m, "IB_INSYNC_AVAILABLE"):
+        _m.IB_INSYNC_AVAILABLE = True  # noqa: D401 – runtime patch
+        # Replace any previously imported placeholder classes with the full fakes
+        setattr(_m, "IB", _FakeIB)
+        setattr(_m, "util", ib_pkg.util)
+        setattr(_m, "Order", _FakeOrder)
+# ADD end
 
 # ---------------------------------------------------------------------------
 # Autouse pytest fixture: flush recorded trades between tests so state never
