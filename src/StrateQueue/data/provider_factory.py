@@ -20,6 +20,19 @@ load_dotenv()
 
 logger = logging.getLogger(__name__)
 
+# ---------------------------------------------------------------------------
+# Public convenience wrappers (backwards-compatibility helpers)
+# ---------------------------------------------------------------------------
+
+def create_provider(provider_type: str, config: "DataProviderConfig | None" = None):
+    """Forward to DataProviderFactory.create_provider for backward compatibility."""
+    return DataProviderFactory.create_provider(provider_type, config)
+
+
+def is_provider_supported(provider_type: str) -> bool:
+    """Return True if *provider_type* is among the registered providers."""
+    return DataProviderFactory.is_provider_supported(provider_type)
+
 
 @dataclass
 class DataProviderInfo:

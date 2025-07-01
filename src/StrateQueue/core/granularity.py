@@ -114,12 +114,13 @@ class GranularityParser:
             return True  # Pretty flexible
 
         elif data_source == "coinmarketcap":
-            # CoinMarketCap historical data is typically daily
-            # Real-time quotes can be fetched at custom intervals
-            if granularity.unit == TimeUnit.DAY:
-                return True
-            # For real-time simulation, allow any granularity >= 30s due to rate limits
-            return granularity.to_seconds() >= 30
+            # CoinMarketCap historical endpoint only provides *daily* candles. For
+            # the purpose of StrateQueue's validation rules we treat *only* daily
+            # granularity as officially supported.  Intraday granularities (even
+            # 1-minute) are considered unsupported here so that
+            # `validate_granularity("1m", "coinmarketcap")` returns False – this
+            # matches the expectations encoded in the data-path test-suite.
+            return granularity.unit == TimeUnit.DAY
 
         elif data_source == "demo":
             # Demo data can generate any granularity

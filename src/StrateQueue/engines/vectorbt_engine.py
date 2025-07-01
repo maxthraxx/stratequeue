@@ -257,7 +257,8 @@ class VectorBTSignalExtractor(BaseSignalExtractor, EngineSignalExtractor):
             return self._safe_hold(error=e)
 
 
-class VectorBTMultiTickerSignalExtractor(BaseSignalExtractor, EngineSignalExtractor):
+class VectorBTMultiTickerSignalExtractor(BaseSignalExtractor,
+                                         EngineSignalExtractor):
     """Multi-ticker signal extractor for VectorBT strategies"""
     
     def __init__(self, engine_strategy: VectorBTEngineStrategy, symbols: list[str], min_bars_required: int = 2, granularity: str = '1min', **strategy_params):
@@ -366,6 +367,12 @@ class VectorBTMultiTickerSignalExtractor(BaseSignalExtractor, EngineSignalExtrac
         except Exception as e:
             logger.error(f"Error extracting signal for {symbol}: {e}")
             return self._safe_hold(error=e)
+
+    # Add a trivial adapter so the ABC is satisfied
+    def extract_signal(self, historical_data: pd.DataFrame):
+        # For single-symbol calls we can just delegate
+        symbol = self.symbols[0] if self.symbols else "UNKNOWN"
+        return self.extract_signals({symbol: historical_data})[symbol]
 
 
 class VectorBTEngine(TradingEngine):
