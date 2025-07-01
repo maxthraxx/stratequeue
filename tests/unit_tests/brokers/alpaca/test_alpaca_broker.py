@@ -130,15 +130,26 @@ def test_connect_sets_state_and_uses_fake_client():
 
 
 def test_connect_failure_returns_false(monkeypatch):
-    # Patch the TradingClient reference *inside* the broker module – the one used at runtime
+    # Test connection failure by patching the TradingClient constructor
+    # We need to handle the case where the broker module might have the real TradingClient
+    # (if broker factory imported it first) or might not have it at all
     def _boom(*_a, **_kw):  # noqa: D401 – raise generic error to simulate failure
         raise Exception("boom")
 
-    monkeypatch.setattr(
-        "StrateQueue.brokers.Alpaca.alpaca_broker.TradingClient",
-        _boom,
-        raising=True,
-    )
+    # Check if the broker module has TradingClient and patch accordingly
+    import StrateQueue.brokers.Alpaca.alpaca_broker as broker_module
+    
+    if hasattr(broker_module, 'TradingClient'):
+        # The real TradingClient is available, patch it
+        monkeypatch.setattr(broker_module, "TradingClient", _boom, raising=False)
+    else:
+        # No TradingClient in the module, which means we're using the stub system
+        # We need to patch the fake client constructor to fail
+        import sys
+        # Get the fake client class from the alpaca.trading.client module
+        fake_client_module = sys.modules.get("alpaca.trading.client")
+        if fake_client_module and hasattr(fake_client_module, 'TradingClient'):
+            monkeypatch.setattr(fake_client_module.TradingClient, "__init__", _boom, raising=False)
 
     bad = AlpacaBroker(BrokerConfig("alpaca"))
     assert bad.connect() is False

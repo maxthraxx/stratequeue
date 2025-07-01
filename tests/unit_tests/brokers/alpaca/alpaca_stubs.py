@@ -124,7 +124,7 @@ class _FakeAlpacaClient:  # noqa: D401 – stub class
                 if hasattr(replace_request, attr):
                     setattr(order, attr, getattr(replace_request, attr))
                     order.updated_at = _dt.datetime.utcnow()
-        return order
+        return True
 
     # Simplified positions helper
     def get_open_position(self, _symbol: str):  # noqa: D401 – stub
@@ -235,30 +235,13 @@ import pytest  # noqa: E402 – after sys.modules patch
 
 @pytest.fixture(autouse=True)
 def _reset_fake_alpaca_client_state():
-    # PRE: guarantee broker module still exports the fake symbols (another test
-    # might have removed or monkey-patched them).
-    import sys as _sys  # local import
-
-    _mod_name = "StrateQueue.brokers.Alpaca.alpaca_broker"
-    if _mod_name in _sys.modules:
-        _ab = _sys.modules[_mod_name]
-        setattr(_ab, "TradingClient", _FakeAlpacaClient)
-        setattr(_ab, "APIError", _FakeAPIError)
-
     yield
     # After each test, wipe orders from every instantiated fake client to ensure
     # full isolation between cases (important when the same broker instance is
     # reused by different tests via fixtures or parameterisation).
 
-    # 1) Clear orders on every existing fake client instance ----------------
     for obj in gc.get_objects():
+        # Using isinstance is safe because every stub instance is of the exact
+        # class defined above (we do not expect subclasses).
         if isinstance(obj, _FakeAlpacaClient):
-            obj._orders.clear()
-
-    # 2) Ensure the AlpacaBroker module still points at the fake TradingClient
-    if _mod_name in _sys.modules:
-        _ab = _sys.modules[_mod_name]
-        if not hasattr(_ab, "TradingClient"):
-            setattr(_ab, "TradingClient", _FakeAlpacaClient)
-        if not hasattr(_ab, "APIError"):
-            setattr(_ab, "APIError", _FakeAPIError) 
+            obj._orders.clear() 

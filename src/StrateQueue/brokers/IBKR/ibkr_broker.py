@@ -12,7 +12,14 @@ from typing import Any
 
 try:
     from ib_insync import IB, util, Order
-    IB_INSYNC_AVAILABLE = True
+    # Check if this is the real ib_insync or just a test shim
+    # Real ib_insync has many more classes and attributes
+    import ib_insync
+    if hasattr(ib_insync, 'Contract') and hasattr(ib_insync, 'Stock') and hasattr(ib_insync, 'Trade'):
+        IB_INSYNC_AVAILABLE = True
+    else:
+        # This is likely a test shim, treat as unavailable
+        IB_INSYNC_AVAILABLE = False
 except ImportError:
     IB_INSYNC_AVAILABLE = False
     

@@ -45,7 +45,7 @@ if _detailed_pkg is not None and _detailed_pkg is not sys.modules.get(__name__):
     sys.modules[__name__] = _detailed_pkg
     sys.modules.setdefault("ib_insync", _detailed_pkg)
     # Nothing else to define – the detailed stub already contains everything.
-    del importlib, sys, types, _STUB_PATH, _detailed_pkg
+    del importlib, sys, types, SimpleNamespace, _STUB_PATH, _detailed_pkg
     # Note: cannot use "return" at module top-level; just stop executing by
     # guarding the remainder of the file with the above condition.
 else:
@@ -129,30 +129,6 @@ else:
     # Map expected symbols --------------------------------------------------
     Order = _DummyOrder  # noqa: N816 – keep camelCase for API parity
 
-    # -------------------------------------------------------------------
-    # Add minimal Contract/Stock/Crypto helpers – enough attributes for
-    # StrateQueue.contracts.create_contract_with_detection().
-    # -------------------------------------------------------------------
-    class _DummyContract(SimpleNamespace):
-        def __init__(self, symbol: str, secType: str, exchange: str, currency: str):
-            super().__init__(
-                symbol=symbol.upper(),
-                secType=secType.upper(),
-                exchange=exchange.upper(),
-                currency=currency.upper(),
-                primaryExchange=exchange.upper(),
-            )
-
-    class Stock(_DummyContract):  # noqa: D401
-        def __init__(self, symbol: str, exchange: str = "SMART", currency: str = "USD"):
-            super().__init__(symbol, "STK", exchange, currency)
-
-    class Crypto(_DummyContract):  # noqa: D401
-        def __init__(self, symbol: str, exchange: str = "PAXOS", currency: str = "USD"):
-            super().__init__(symbol, "CRYPTO", exchange, currency)
-
-    Contract = _DummyContract  # alias expected by callers
-
     # Fake util sub-module with startLoop helper -----------------------------
     util = types.ModuleType("ib_insync.util")
     util.startLoop = lambda: None  # type: ignore[assignment]
@@ -160,28 +136,5 @@ else:
     # Register util so that "from ib_insync import util" works -------------
     sys.modules.setdefault("ib_insync.util", util)
 
-    # Register ourselves for any sub-module look-ups like ``ib_insync.wrapper``
-    __path__ = []  # type: ignore[var-annotated]
-    _wrapper_mod = types.ModuleType("ib_insync.wrapper")
-    sys.modules.setdefault("ib_insync.wrapper", _wrapper_mod)
-
     # Clean up helper names from module namespace ---------------------------
-    del importlib, sys, types, _STUB_PATH, _detailed_pkg 
-
-# ---------------------------------------------------------------------------
-# Ensure any StrateQueue IBKR modules that were imported *before* this shim
-# receive the fully-featured fake API so that IBKRBroker sees a working client.
-# ---------------------------------------------------------------------------
-# Needed because earlier helper cleanup may have removed the binding
-import sys  # noqa: E402 – ensured available for the loop below
-
-for _mn, _m in list(sys.modules.items()):
-    if _mn.startswith("StrateQueue.brokers.IBKR") and hasattr(_m, "IB_INSYNC_AVAILABLE"):
-        _m.IB_INSYNC_AVAILABLE = True  # type: ignore[attr-defined]
-        setattr(_m, "IB", globals().get("IB"))
-        setattr(_m, "util", globals().get("util"))
-        setattr(_m, "Order", globals().get("Order"))
-        # Optional helpers if defined (added by detailed stub)
-        for _attr in ("Stock", "Crypto", "Contract"):
-            if _attr in globals():
-                setattr(_m, _attr, globals()[_attr]) 
+    del importlib, sys, types, SimpleNamespace, _STUB_PATH, _detailed_pkg 
