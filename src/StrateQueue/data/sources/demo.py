@@ -51,6 +51,14 @@ class TestDataIngestion(BaseDataIngestion):
         self.simulated_time = datetime.now()
         self.granularity_seconds = 60  # Default 1 minute
 
+        # ------------------------------------------------------------------
+        # Internal cache → key: (symbol, days_back, granularity) → DataFrame
+        # This allows fetch_historical_data to return an *identical* object
+        # for repeat calls with the same parameters, satisfying the test
+        # expectation that `df1 is df2`.
+        # ------------------------------------------------------------------
+        self._historical_cache: dict[tuple[str, int, str], pd.DataFrame] = {}
+
     async def fetch_historical_data(
         self, symbol: str, days_back: int = 30, granularity: str = "1m"
     ) -> pd.DataFrame:
@@ -62,6 +70,11 @@ class TestDataIngestion(BaseDataIngestion):
             days_back: Number of days of historical data
             granularity: Data granularity (e.g., '1s', '1m', '5m', '1h', '1d')
         """
+
+        cache_key = (symbol, days_back, granularity)
+        if cache_key in self._historical_cache:
+            # Return the exact same object that was previously generated
+            return self._historical_cache[cache_key]
 
         # Parse granularity to determine time intervals
         parsed_granularity = self._parse_granularity(granularity)
@@ -140,7 +153,12 @@ class TestDataIngestion(BaseDataIngestion):
         df.set_index("timestamp", inplace=True)
         df.index = pd.to_datetime(df.index)
 
-        # Cache the data
+        # Store in dedicated memo-cache **before** logging/returning so that
+        # immediate subsequent calls hit the fast path above.
+        self._historical_cache[cache_key] = df
+
+        # Keep legacy attribute in sync so downstream code/tests relying on
+        # provider.historical_data continue to work.
         self.historical_data[symbol] = df
 
         # Update current price
