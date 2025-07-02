@@ -10,6 +10,7 @@
 📖 **[Documentation](https://stratequeue.com/docs)** | 🚀 **[Quick Start Guide](https://www.stratequeue.com/docs/quick-start)** | 💬 **[Community](https://discord.gg/H4hWAXJYqX)**
 
 > **The fastest way from backtest to live trading**
+[![Stargazers repo roster for @StrateQueue/StrateQueue](https://reporoster.com/stars/StrateQueue/StrateQueue)](https://github.com/StrateQueue/StrateQueue/stargazers)
 
 ## 🌍 README Translations
 
