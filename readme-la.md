@@ -115,7 +115,7 @@ stratequeue webui
 | **Sectores**                |               |
 | ├age alpaca                 | ✅ implemented |
 | ├cam interactive sectoribus | ✅ implemented |
-| ├─ Kraken                   | ❌ implemented |
+| ├age kraken                 | ❌ implemented |
 | └─ binance                  | ❌ venire cito |
 | **Data providers**          |               |
 | ├age yfinance               | ✅ implemented |
@@ -126,7 +126,7 @@ stratequeue webui
 
 ## ✨ Quid stratequeue?
 
-**🛡️ tutum per default**- annuit, solum modus per default. Non accidentalis artium.
+**🛡️ tutum per default** — Signals-only mode by default. No accidental trades.
 
 **🔌 engine agnostic**- Works cum backtesting.py, vectorbt, backtrader, zipline-reloaded, et magis venire cito.
 
