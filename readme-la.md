@@ -16,7 +16,7 @@
 | 🇨🇳 Simplified Chinese | [Readme.zh-cn.md](README.zh-CN.md) |
 | 🇹🇼 Traditional Sinica | [Readme.zh-w.md](README.zh-TW.md)  |
 | 🇮🇳 Hindi              | [Readme.hi.md](README.hi.md)       |
-| 🇫🇷 Gallica            | [README.fr.md](README.fr.md)       |
+| 🇫🇷 Gallica            | [Readme.fr.md](README.fr.md)       |
 | Arabic                  | [Readme.ar.md](README.ar.md)       |
 
 Backtest vivere in seconds. Stratequeue lets deploy quis Python negotiatione belli (**backtrader**,**Zipline**,**vectorbt**,**backtrader**, Etc.) ad ulla sectorem cum uno mandatum:`stratequeue deploy --strategy ./your_script.py`. Nulla codice mutationes.
@@ -117,7 +117,7 @@ stratequeue webui
 | └─ Zipline-Reloaded         | ✅ implemented |
 | **Sectores**                |               |
 | ├age alpaca                 | ✅ implemented |
-| ├cam interactive sectoribus | ✅ Implemented |
+| ├cam interactive sectoribus | ✅ implemented |
 | ├age kraken                 | ❌ implemented |
 | └─ binance                  | ❌ venire cito |
 | **Data providers**          |               |
