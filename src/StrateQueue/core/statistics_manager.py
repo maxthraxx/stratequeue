@@ -472,15 +472,20 @@ class StatisticsManager:
         else:
             seconds = median_diff / pd.Timedelta(seconds=1)
         
-        # Calculate periods per year
+        # Detect daily data (seconds ~ 86400) and use 252 trading days per year (industry
+        # convention). Otherwise fall back to a time-based estimate.
         if seconds <= 0:
             return 252
-            
-        periods_per_day = 86400 / seconds  # seconds in a day
-        periods_per_year = periods_per_day * 365
-        
-        # Cap at reasonable bounds
-        return min(max(periods_per_year, 1), 365 * 24 * 60)  # Between yearly and per-minute
+
+        # If the bar interval is roughly a day (+/- 12 hours) choose 252.
+        if 0.5 * 86400 <= seconds <= 1.5 * 86400:
+            return 252
+
+        periods_per_day = 86400 / seconds  # bars per calendar day
+        periods_per_year = periods_per_day * 365.25  # calendar-year scaling
+
+        # Clamp to sensible range
+        return min(max(periods_per_year, 1), 365.25 * 24 * 60)  # Between yearly and per-minute
 
     # ------------------------------------------------------------------
     def _calculate_exposure_time(self) -> float:
@@ -510,16 +515,27 @@ class StatisticsManager:
             return 0.0
         
         total_return = curve.iloc[-1] / curve.iloc[0] - 1
-        periods = len(curve)
         
-        if periods == 0 or annualization_factor == 0:
-            return total_return
-            
-        # Convert to annualized: (1 + total_return)^(periods_per_year / periods) - 1
-        years = periods / annualization_factor
-        if years > 0:
+        # Use actual elapsed calendar time rather than bar count to compute CAGR.
+        try:
+            elapsed_days = (curve.index[-1] - curve.index[0]).days
+        except Exception:
+            # Fallback to bar-count method if index math fails
+            elapsed_days = 0
+
+        if elapsed_days <= 0:
+            # Fallback to original bar-count method
+            periods = len(curve)
+            if periods == 0 or annualization_factor == 0:
+                return total_return
+            years = periods / annualization_factor
             return (1 + total_return) ** (1 / years) - 1
-        return total_return
+
+        years = elapsed_days / 365.25
+        if years <= 0:
+            return total_return
+
+        return (1 + total_return) ** (1 / years) - 1
 
     # ------------------------------------------------------------------
     def _calculate_annualized_volatility(self, rets: pd.Series, annualization_factor: float) -> float:
@@ -538,12 +554,16 @@ class StatisticsManager:
         rf_per_period = risk_free_rate / annualization_factor
         excess_returns = rets - rf_per_period
         
-        # Only consider negative returns for denominator
         downside_returns = excess_returns[excess_returns < 0]
-        if len(downside_returns) == 0 or downside_returns.std() == 0:
+        if downside_returns.empty:
             return 0.0
-            
-        return (excess_returns.mean() / downside_returns.std()) * np.sqrt(annualization_factor)
+
+        # Downside deviation = sqrt(mean(negative_excess^2)) – cf. Sortino 1994.
+        downside_deviation = np.sqrt((downside_returns ** 2).mean())
+        if downside_deviation == 0:
+            return 0.0
+
+        return (excess_returns.mean() / downside_deviation) * np.sqrt(annualization_factor)
 
     # ------------------------------------------------------------------
     def _calculate_calmar_ratio(self, annualized_return: float, max_drawdown: float) -> float:
@@ -770,7 +790,9 @@ class StatisticsManager:
                     
                     # Count bars between entry (inclusive) and exit (exclusive)
                     if entry_loc >= 0 and exit_loc >= 0:
-                        bars_held = max(0, exit_loc - entry_loc)
+                        # Inclusive count: a trade opened and closed in the same bar is
+                        # considered held for 1 bar.
+                        bars_held = max(0, exit_loc - entry_loc + 1)
                         total_hold_bars += bars_held
                 except (IndexError, KeyError):
                     # If timestamps not found in index, skip this round trip for bar counting
@@ -850,8 +872,13 @@ class StatisticsManager:
             rf_per_period = risk_free_rate / annualization_factor
             # Calculate excess returns
             excess_returns = rets - rf_per_period
+            # Industry-standard Sharpe uses the *standard deviation of excess returns* as the
+            # risk term – see e.g. https://en.wikipedia.org/wiki/Sharpe_ratio.
+            excess_vol = excess_returns.std()
+            if excess_vol == 0:
+                return 0.0
             # Annualized Sharpe ratio
-            sharpe = (excess_returns.mean() / rets.std()) * np.sqrt(annualization_factor)
+            sharpe = (excess_returns.mean() / excess_vol) * np.sqrt(annualization_factor)
 
         realised_pnl = self._calculate_realised_pnl()
         unrealised_pnl = self._calculate_unrealised_pnl()
