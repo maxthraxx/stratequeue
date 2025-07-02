@@ -20,6 +20,7 @@ Backtest vivere in seconds. Stratequeue lets deploy quis Python negotiatione bel
 
 -   [StrateQueue](#stratequeue-)
     -   [🌍 readme Translations](#-readme-translations)
+    -   [� StrateQueue 📉](#-stratequeue-)
     -   [📑 Table of Contents](#-table-of-contents)
     -   [🎯 De Magia: a backtest ut vivere in uno imperium](#-the-magic-from-backtest-to-live-in-one-command)
         -   [Tua existentium backtest:](#your-existing-backtest)
