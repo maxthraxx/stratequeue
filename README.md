@@ -2,10 +2,10 @@
 
 [![PyPI version](https://badge.fury.io/py/stratequeue.svg?refresh=1)](https://badge.fury.io/py/stratequeue)
 [![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
-[![codecov](https://codecov.io/gh/stratequeue/stratequeue/branch/main/graph/badge.svg)](https://codecov.io/gh/stratequeue/stratequeue)
 [![License: AGPL-3.0](https://img.shields.io/badge/License-AGPL--3.0-yellow.svg)](https://github.com/StrateQueue/StrateQueue/blob/main/LICENSE)
 [![Downloads](https://pepy.tech/badge/stratequeue)](https://pepy.tech/project/stratequeue)
 [![GitHub stars](https://img.shields.io/github/stars/StrateQueue/StrateQueue?refresh=1)](https://github.com/StrateQueue/StrateQueue/stargazers)
+<!---[![codecov](https://codecov.io/gh/stratequeue/stratequeue/branch/main/graph/badge.svg)](https://codecov.io/gh/stratequeue/stratequeue)-->
 
 📖 **[Documentation](https://stratequeue.com/docs)** | 🚀 **[Quick Start Guide](https://www.stratequeue.com/docs/quick-start)** | 💬 **[Community](https://discord.gg/H4hWAXJYqX)**
 
