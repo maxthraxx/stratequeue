@@ -112,7 +112,7 @@ stratequeue webui
 | **Backtesting engines**     |               |
 | Cie ├ backtesting.py        | ✅ implemented |
 | ├─ vectorbt                 | ✅ implemented |
-| ├─ Backtrader               | ✅ implemented |
+| ├age backtrader             | ✅ implemented |
 | └─ Zipline-Reloaded         | ✅ implemented |
 | **Sectores**                |               |
 | ├age alpaca                 | ✅ implemented |
