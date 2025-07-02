@@ -32,7 +32,7 @@ Backtest vivere in seconds. Stratequeue lets deploy quis Python negotiatione bel
     -   [🔧 fulcitur integrations](#-supported-integrations)
     -   [✨ Quid stratequeue?](#-why-stratequeue)
     -   [🔄 Quomodo operatur](#-how-it-works)
-    -   [Star History](#star-history)
+    -   [Stella historia](#star-history)
     -   [⚠️ Disclaimer - Non investment consilium](#️-disclaimer--no-investment-advice)
     -   [© License](#-license)
 
@@ -119,7 +119,7 @@ stratequeue webui
 | └─ binance                  | ❌ venire cito |
 | **Data providers**          |               |
 | ├age yfinance               | ✅ implemented |
-| Cle Cle Polygon.io          | ✅ Implemented |
+| Cle Cle Polygon.io          | ✅ implemented |
 | ├cam coinmarketcap          | ✅ implemented |
 | ├age alpaca                 | ❌ venire cito |
 | └─ Interactive sectoribus   | ❌ venire cito |
