@@ -22,6 +22,7 @@ Backtest to live in seconds. StrateQueue lets you deploy any Python trading stra
 ## 📑 Table of Contents
 - [StrateQueue ](#stratequeue-)
   - [🌍 README Translations](#-readme-translations)
+  - [� StrateQueue 📉](#-stratequeue-)
   - [📑 Table of Contents](#-table-of-contents)
   - [🎯 The Magic: From Backtest to Live in One Command](#-the-magic-from-backtest-to-live-in-one-command)
     - [Your existing backtest:](#your-existing-backtest)
