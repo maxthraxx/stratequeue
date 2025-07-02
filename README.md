@@ -12,9 +12,11 @@
 > **The fastest way from backtest to live trading**
 [![Stargazers repo roster for @StrateQueue/StrateQueue](https://reporoster.com/stars/StrateQueue/StrateQueue)](https://github.com/StrateQueue/StrateQueue/stargazers)
 
+<!---
 ## 🌍 README Translations
 
 [🇺🇸 English](README.md) • [🇨🇳 简体中文](README.zh-CN.md) • [繁體中文](README.zh-TW.md) • [🇮🇳 हिंदी](README.hi.md) • [🇫🇷 Français](README.fr.md) • [🇸🇦 العربية](README.ar.md)
+-->
 
 ## 📈 StrateQueue 📉
 
