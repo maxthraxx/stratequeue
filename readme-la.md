@@ -6,11 +6,11 @@
 
 📖**[Documenta](https://stratequeue.com/docs)**Squama 🚀**[Velox Start Guide](https://www.stratequeue.com/docs/quick-start)**Squama 💬**[Conmunitas](https://discord.gg/H4hWAXJYqX)**
 
-> **Et celerrime iter a backtest ad vivere negotiatione**
+> **Et celerrime iter a backtest ad vivere negotiatione**[![Stargazers repo roster for @StrateQueue/StrateQueue](https://reporoster.com/stars/StrateQueue/StrateQueue)](https://github.com/StrateQueue/StrateQueue/stargazers)
 
 ## 🌍 readme Translations
 
-[🇺🇸 Latina](README.md)•[🇨🇳 Simplified Chinese](README.zh-CN.md)•[Traditional Chinese](README.zh-TW.md)•[🇮🇳 Hindi](README.hi.md)•[🇫🇷 Gallica](README.fr.md)•[Arabic](README.ar.md)
+[🇺🇸 Latina](README.md)•[🇨🇳 Simplified Chinese](README.zh-CN.md)•[Traditional Chinese](README.zh-TW.md)•[🇮🇳 हिंदी](README.hi.md)•[🇫🇷 Gallica](README.fr.md)•[Arabic](README.ar.md)
 
 ## 📈 StrateQueue 📉
 
@@ -29,7 +29,7 @@ Backtest vivere in seconds. Stratequeue lets deploy quis Python negotiatione bel
     -   [📥 Installation](#-installation)
         -   [Setup](#setup)
         -   [Dashboard (experimentalem)](#dashboard-experimental)
-    -   [🔧 fulcitur integrations](#-supported-integrations)
+    -   [🔧 Supported Integrations](#-supported-integrations)
     -   [✨ Quid stratequeue?](#-why-stratequeue)
     -   [🔄 Quomodo operatur](#-how-it-works)
     -   [Stella historia](#star-history)
