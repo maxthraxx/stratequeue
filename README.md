@@ -127,7 +127,7 @@ stratequeue webui
 
 ## 🔄 How It Works
 
-![How it works](examples/imgs/how-it-works.png)
+<img src="examples/imgs/how-it-works.png" alt="How it works" width="600"/>
 
 ## Star History
 
