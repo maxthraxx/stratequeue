@@ -12,6 +12,8 @@
 
 [🇺🇸 Latina](README.md)•[🇨🇳 Simplified Chinese](README.zh-CN.md)•[Traditional Chinese](README.zh-TW.md)•[🇮🇳 Hindi](README.hi.md)•[🇫🇷 Gallica](README.fr.md)•[Arabic](README.ar.md)
 
+## 📈 StrateQueue 📉
+
 Backtest vivere in seconds. Stratequeue lets deploy quis Python negotiatione belli (**backtrader**,**Zipline**,**vectorbt**,**backtrader**, Etc.) ad ulla sectorem cum uno mandatum:`stratequeue deploy --strategy ./your_script.py`. Nulla codice mutationes.
 
 ## 📑 Table of Contents
@@ -109,7 +111,7 @@ stratequeue webui
 | ├─ vectorbt                 | ✅ implemented |
 | ├age backtrader             | ✅ implemented |
 | └─ Zipline-Reloaded         | ✅ implemented |
-| **Sectoribus**              |               |
+| **Sectores**                |               |
 | ├age alpaca                 | ✅ implemented |
 | ├cam interactive sectoribus | ✅ implemented |
 | ├age kraken                 | ❌ implemented |
@@ -117,7 +119,7 @@ stratequeue webui
 | **Data providers**          |               |
 | ├age yfinance               | ✅ implemented |
 | Cle Cle Polygon.io          | ✅ implemented |
-| ├cam coinmarketcap          | ✅ implemented |
+| ├─ CoinMarketCap            | ✅ implemented |
 | ├age alpaca                 | ❌ venire cito |
 | └─ Interactive sectoribus   | ❌ venire cito |
 
