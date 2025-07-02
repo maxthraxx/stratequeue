@@ -105,24 +105,24 @@ stratequeue webui
 
 ## 🔧 fulcitur integrations
 
-| Integratio                | Status        |
-| ------------------------- | ------------- |
-| **Backtesting engines**   |               |
-| Cie ├ backtesting.py      | ✅ implemented |
-| ├─ vectorbt               | ✅ implemented |
-| ├age backtrader           | ✅ implemented |
-| └─ Zipline-Reloaded       | ✅ implemented |
-| **Sectores**              |               |
-| ├age alpaca               | ✅ implemented |
-| ├─ Interactive Brokers    | ✅ implemented |
-| ├age kraken               | ❌ implemented |
-| └─ Binance                | ❌ venire cito |
-| **Data providers**        |               |
-| ├age yfinance             | ✅ implemented |
-| Cle Cle Polygon.io        | ✅ implemented |
-| ├cam coinmarketcap        | ✅ implemented |
-| ├age alpaca               | ❌ venire cito |
-| └─ Interactive sectoribus | ❌ venire cito |
+| Integratio                  | Status        |
+| --------------------------- | ------------- |
+| **Backtesting engines**     |               |
+| Cie ├ backtesting.py        | ✅ implemented |
+| ├─ vectorbt                 | ✅ implemented |
+| ├age backtrader             | ✅ implemented |
+| └─ Zipline-Reloaded         | ✅ implemented |
+| **Sectores**                |               |
+| ├age alpaca                 | ✅ implemented |
+| ├cam interactive sectoribus | ✅ implemented |
+| ├age kraken                 | ❌ implemented |
+| └─ binance                  | ❌ venire cito |
+| **Data providers**          |               |
+| ├age yfinance               | ✅ implemented |
+| Cle Cle Polygon.io          | ✅ implemented |
+| ├cam coinmarketcap          | ✅ implemented |
+| ├age alpaca                 | ❌ venire cito |
+| └─ Interactive sectoribus   | ❌ venire cito |
 
 ## ✨ Quid stratequeue?
 
@@ -130,7 +130,7 @@ stratequeue webui
 
 **🔌 engine agnostic**- Works cum backtesting.py, vectorbt, backtrader, zipline-reloaded, et magis venire cito.
 
-**🏦 Multi-Broker**- Unified API per Interactive sectoribus, Alpaca, et magis venire cito.
+**🏦 Multi-sectorem**- Unified API per Interactive sectoribus, Alpaca, et magis venire cito.
 
 **🎯 Portfolio Management**- Deploy una Strategies vel Cart Hunests trans Tullius Rationes
 
@@ -153,4 +153,4 @@ Stratequeue est aperta-fonte Toolkit provisum**"Sicut, est" pro educational et i
 
 ## © License
 
-StrateQueue is released under the **[GNU Affero General Public License v3.0](LICENSE)**.
+Stratequeue est dimisit sub**[GNU Affero General Public License v3.0](LICENSE)**.
