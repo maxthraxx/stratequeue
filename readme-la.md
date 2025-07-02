@@ -115,7 +115,7 @@ stratequeue webui
 | **Sectores**                |               |
 | ├age alpaca                 | ✅ implemented |
 | ├cam interactive sectoribus | ✅ implemented |
-| ├age kraken                 | ❌ implemented |
+| ├─ Kraken                   | ❌ implemented |
 | └─ binance                  | ❌ venire cito |
 | **Data providers**          |               |
 | ├age yfinance               | ✅ implemented |
