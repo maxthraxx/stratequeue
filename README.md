@@ -13,19 +13,13 @@
 
 ## 🌍 README Translations
 
-| Language | File |
-|----------|------|
-| 🇺🇸 English | [README.md](README.md) |
-| 🇨🇳 简体中文 | [README.zh-CN.md](README.zh-CN.md) |
-| 🇹🇼 繁體中文 | [README.zh-TW.md](README.zh-TW.md) |
-| 🇮🇳 हिंदी | [README.hi.md](README.hi.md) |
-| 🇫🇷 Français | [README.fr.md](README.fr.md) |
-| 🇸🇦 العربية | [README.ar.md](README.ar.md) |
+[🇺🇸 English](README.md) • [🇨🇳 简体中文](README.zh-CN.md) • [繁體中文](README.zh-TW.md) • [🇮🇳 हिंदी](README.hi.md) • [🇫🇷 Français](README.fr.md) • [🇸🇦 العربية](README.ar.md)
 
 Backtest to live in seconds. StrateQueue lets you deploy any Python trading strategy (**backtrader**, **zipline**, **vectorbt**, **backtrader**, etc.) to any broker with one command: ```stratequeue deploy --strategy ./your_script.py```. No code changes.
 
 ## 📑 Table of Contents
-- [StrateQueue](#stratequeue)
+- [StrateQueue ](#stratequeue-)
+  - [🌍 README Translations](#-readme-translations)
   - [📑 Table of Contents](#-table-of-contents)
   - [🎯 The Magic: From Backtest to Live in One Command](#-the-magic-from-backtest-to-live-in-one-command)
     - [Your existing backtest:](#your-existing-backtest)
