@@ -8,6 +8,17 @@
 
 > **Et celerrime iter a backtest ad vivere negotiatione**
 
+## 🌍 readme Translations
+
+| LENTITUDO               | Lima                               |
+| ----------------------- | ---------------------------------- |
+| 🇺🇸 Latina             | [Readme.md](README.md)             |
+| 🇨🇳 Simplified Chinese | [Readme.zh-cn.md](README.zh-CN.md) |
+| 🇹🇼 Traditional Sinica | [Readme.zh-w.md](README.zh-TW.md)  |
+| 🇮🇳 Hindi              | [Readme.hi.md](README.hi.md)       |
+| 🇫🇷 Gallica            | [Readme.fr.md](README.fr.md)       |
+| Arabic                  | [Readme.ar.md](README.ar.md)       |
+
 Backtest vivere in seconds. Stratequeue lets deploy quis Python negotiatione belli (**backtrader**,**Zipline**,**vectorbt**,**backtrader**, Etc.) ad ulla sectorem cum uno mandatum:`stratequeue deploy --strategy ./your_script.py`. Nulla codice mutationes.
 
 ## 📑 Table of Contents
@@ -58,9 +69,9 @@ class SMAStrategy(Strategy):
 ## 🛠️ Pertifisites
 
 -   Python**3.10**aut recentior (probata usque ad 3,11)
--   Pip et virtualis environment (commendatur)
+-   pip and a virtual environment (recommended)
 -   (Libitum) COCIO API documentorum si cogitas ad Trade vivet (E.G. Alpaca, Interactive sectoribus)
--   (Optional) A C compiler for building certain dependencies (TA-Lib, IB-API) on Linux/macOS
+-   (Libitum) A C Compiler pro aedificationem quaedam dependentcies (T-lib, IB, API) in Linux / Macos
 
 ## 📥 Installation
 
@@ -138,9 +149,9 @@ stratequeue webui
 
 Stratequeue est aperta-fonte Toolkit provisum**"Sicut, est" pro educational et informational proposita tantum**.
 
--   Facit**non**constituere investment consilium, brokerage officia, aut commendaticiis emere aut vendere aliqua financial instrumentum.
+-   Facit**not**constituere investment consilium, brokerage officia, aut commendaticiis emere aut vendere aliqua financial instrumentum.
 -   Omnes negotiationem involves substantial periculo**Praeterita perficientur non indicativo futuris results**. Vos may perdere aliquas et omnia tua capitis.
--   Per usura stratequeue agnoscere quod**Tu solus es responsible pro negotiatione decisions**et conveniunt, quod stratequeue mainttainers et contibriores erit**not be liable for any loss or damage**ex usu huius software.
+-   Per usura stratequeue agnoscere quod**Tu solus es responsible pro negotiatione decisions**et conveniunt, quod stratequeue mainttainers et contibriores erit**non obnoxia pro nulla damnum vel damnum**ex usu huius software.
 -   Consule qualified financial professional ante explicando vivere capitis.
 
 ## © License
