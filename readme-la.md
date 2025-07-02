@@ -10,7 +10,7 @@
 
 ## 🌍 readme Translations
 
-[🇺🇸 Latina](README.md)•[🇨🇳 Simplified Chinese](README.zh-CN.md)•[繁體中文](README.zh-TW.md) • [🇮🇳 Hindi](README.hi.md)•[🇫🇷 Gallica](README.fr.md)•[Arabic](README.ar.md)
+[🇺🇸 Latina](README.md)•[🇨🇳 Simplified Chinese](README.zh-CN.md)•[Traditional Chinese](README.zh-TW.md)•[🇮🇳 Hindi](README.hi.md)•[🇫🇷 Gallica](README.fr.md)•[Arabic](README.ar.md)
 
 ## 📈 StrateQueue 📉
 
@@ -32,7 +32,7 @@ Backtest vivere in seconds. Stratequeue lets deploy quis Python negotiatione bel
     -   [🔧 fulcitur integrations](#-supported-integrations)
     -   [✨ Quid stratequeue?](#-why-stratequeue)
     -   [🔄 Quomodo operatur](#-how-it-works)
-    -   [Stella historia](#star-history)
+    -   [Star History](#star-history)
     -   [⚠️ Disclaimer - Non investment consilium](#️-disclaimer--no-investment-advice)
     -   [© License](#-license)
 
@@ -117,9 +117,9 @@ stratequeue webui
 | ├cam interactive sectoribus | ✅ implemented |
 | ├age kraken                 | ❌ implemented |
 | └─ binance                  | ❌ venire cito |
-| **Data Providers**          |               |
+| **Data providers**          |               |
 | ├age yfinance               | ✅ implemented |
-| Cle Cle Polygon.io          | ✅ implemented |
+| Cle Cle Polygon.io          | ✅ Implemented |
 | ├cam coinmarketcap          | ✅ implemented |
 | ├age alpaca                 | ❌ venire cito |
 | └─ Interactive sectoribus   | ❌ venire cito |
