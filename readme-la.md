@@ -16,7 +16,7 @@
 | 🇨🇳 Simplified Chinese | [Readme.zh-cn.md](README.zh-CN.md) |
 | 🇹🇼 Traditional Sinica | [Readme.zh-w.md](README.zh-TW.md)  |
 | 🇮🇳 Hindi              | [Readme.hi.md](README.hi.md)       |
-| 🇫🇷 Gallica            | [Readme.fr.md](README.fr.md)       |
+| 🇫🇷 Gallica            | [README.fr.md](README.fr.md)       |
 | Arabic                  | [Readme.ar.md](README.ar.md)       |
 
 Backtest vivere in seconds. Stratequeue lets deploy quis Python negotiatione belli (**backtrader**,**Zipline**,**vectorbt**,**backtrader**, Etc.) ad ulla sectorem cum uno mandatum:`stratequeue deploy --strategy ./your_script.py`. Nulla codice mutationes.
@@ -69,7 +69,7 @@ class SMAStrategy(Strategy):
 ## 🛠️ Pertifisites
 
 -   Python**3.10**aut recentior (probata usque ad 3,11)
--   pip and a virtual environment (recommended)
+-   Pip et virtualis environment (commendatur)
 -   (Libitum) COCIO API documentorum si cogitas ad Trade vivet (E.G. Alpaca, Interactive sectoribus)
 -   (Libitum) A C Compiler pro aedificationem quaedam dependentcies (T-lib, IB, API) in Linux / Macos
 
@@ -117,7 +117,7 @@ stratequeue webui
 | └─ Zipline-Reloaded         | ✅ implemented |
 | **Sectores**                |               |
 | ├age alpaca                 | ✅ implemented |
-| ├cam interactive sectoribus | ✅ implemented |
+| ├cam interactive sectoribus | ✅ Implemented |
 | ├age kraken                 | ❌ implemented |
 | └─ binance                  | ❌ venire cito |
 | **Data providers**          |               |
@@ -149,7 +149,7 @@ stratequeue webui
 
 Stratequeue est aperta-fonte Toolkit provisum**"Sicut, est" pro educational et informational proposita tantum**.
 
--   Facit**not**constituere investment consilium, brokerage officia, aut commendaticiis emere aut vendere aliqua financial instrumentum.
+-   Facit**non**constituere investment consilium, brokerage officia, aut commendaticiis emere aut vendere aliqua financial instrumentum.
 -   Omnes negotiationem involves substantial periculo**Praeterita perficientur non indicativo futuris results**. Vos may perdere aliquas et omnia tua capitis.
 -   Per usura stratequeue agnoscere quod**Tu solus es responsible pro negotiatione decisions**et conveniunt, quod stratequeue mainttainers et contibriores erit**non obnoxia pro nulla damnum vel damnum**ex usu huius software.
 -   Consule qualified financial professional ante explicando vivere capitis.
