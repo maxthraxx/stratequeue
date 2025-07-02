@@ -60,7 +60,7 @@ class SMAStrategy(Strategy):
 -   Python**3.10**aut recentior (probata usque ad 3,11)
 -   Pip et virtualis environment (commendatur)
 -   (Libitum) COCIO API documentorum si cogitas ad Trade vivet (E.G. Alpaca, Interactive sectoribus)
--   (Libitum) A C Compiler pro aedificationem quaedam dependentcies (T-lib, IB, API) in Linux / Macos
+-   (Optional) A C compiler for building certain dependencies (TA-Lib, IB-API) on Linux/macOS
 
 ## 📥 Installation
 
@@ -140,7 +140,7 @@ Stratequeue est aperta-fonte Toolkit provisum**"Sicut, est" pro educational et i
 
 -   Facit**non**constituere investment consilium, brokerage officia, aut commendaticiis emere aut vendere aliqua financial instrumentum.
 -   Omnes negotiationem involves substantial periculo**Praeterita perficientur non indicativo futuris results**. Vos may perdere aliquas et omnia tua capitis.
--   Per usura stratequeue agnoscere quod**Tu solus es responsible pro negotiatione decisions**et conveniunt, quod stratequeue mainttainers et contibriores erit**non obnoxia pro nulla damnum vel damnum**ex usu huius software.
+-   Per usura stratequeue agnoscere quod**Tu solus es responsible pro negotiatione decisions**et conveniunt, quod stratequeue mainttainers et contibriores erit**not be liable for any loss or damage**ex usu huius software.
 -   Consule qualified financial professional ante explicando vivere capitis.
 
 ## © License
