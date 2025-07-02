@@ -10,20 +10,14 @@
 
 ## 🌍 readme Translations
 
-| LENTITUDO               | Lima                               |
-| ----------------------- | ---------------------------------- |
-| 🇺🇸 Latina             | [Readme.md](README.md)             |
-| 🇨🇳 Simplified Chinese | [Readme.zh-cn.md](README.zh-CN.md) |
-| 🇹🇼 Traditional Sinica | [Readme.zh-w.md](README.zh-TW.md)  |
-| 🇮🇳 Hindi              | [Readme.hi.md](README.hi.md)       |
-| 🇫🇷 Gallica            | [Readme.fr.md](README.fr.md)       |
-| Arabic                  | [Readme.ar.md](README.ar.md)       |
+[🇺🇸 Latina](README.md)•[🇨🇳 Simplified Chinese](README.zh-CN.md)•[Traditional Chinese](README.zh-TW.md)•[🇮🇳 Hindi](README.hi.md)•[🇫🇷 Gallica](README.fr.md)•[Arabic](README.ar.md)
 
 Backtest vivere in seconds. Stratequeue lets deploy quis Python negotiatione belli (**backtrader**,**Zipline**,**vectorbt**,**backtrader**, Etc.) ad ulla sectorem cum uno mandatum:`stratequeue deploy --strategy ./your_script.py`. Nulla codice mutationes.
 
 ## 📑 Table of Contents
 
--   [StrateQueue](#stratequeue)
+-   [StrateQueue](#stratequeue-)
+    -   [🌍 readme Translations](#-readme-translations)
     -   [📑 Table of Contents](#-table-of-contents)
     -   [🎯 De Magia: a backtest ut vivere in uno imperium](#-the-magic-from-backtest-to-live-in-one-command)
         -   [Tua existentium backtest:](#your-existing-backtest)
@@ -115,7 +109,7 @@ stratequeue webui
 | ├─ vectorbt                 | ✅ implemented |
 | ├age backtrader             | ✅ implemented |
 | └─ Zipline-Reloaded         | ✅ implemented |
-| **Sectores**                |               |
+| **Sectoribus**              |               |
 | ├age alpaca                 | ✅ implemented |
 | ├cam interactive sectoribus | ✅ implemented |
 | ├age kraken                 | ❌ implemented |
