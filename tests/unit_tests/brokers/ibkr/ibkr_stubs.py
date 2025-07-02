@@ -192,6 +192,17 @@ ib_pkg.util.startLoop = _FakeUtil.startLoop  # type: ignore[attr-defined]
 ib_pkg.Order = _FakeOrder
 ib_pkg.Trade = _FakeTrade
 
+# Extra marker classes so that IBKRBroker detects a “real” ib_insync package.
+class _FakeContract:  # noqa: D401 – placeholder
+    pass
+
+
+class _FakeStock:  # noqa: D401 – placeholder
+    pass
+
+ib_pkg.Contract = _FakeContract
+ib_pkg.Stock = _FakeStock
+
 # Expose sub-module entries so that ``from ib_insync import util`` works.
 sys.modules.update(
     {

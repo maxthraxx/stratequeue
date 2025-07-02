@@ -183,6 +183,14 @@ class AlpacaBroker(BaseBroker):
         Returns:
             True if connection successful, False otherwise
         """
+        # Fast-fail when mandatory credentials are absent. This prevents the
+        # stub TradingClient from masking invalid connection attempts and
+        # ensures the *connect_failure* unit-test behaves as expected.
+        if not self.alpaca_config.api_key or not self.alpaca_config.secret_key:
+            logger.error("Alpaca API/secret key not supplied – cannot connect")
+            self.is_connected = False
+            return False
+
         try:
             # Initialize Alpaca trading client
             self.trading_client = TradingClient(
