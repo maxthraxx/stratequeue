@@ -34,4 +34,14 @@ jobs:
       - name: Add README - Hindi
         uses: ephraimduncan/translate-readme@v1
         with:
-          LANG: hi 
+          LANG: hi
+
+      - name: Add README - Traditional Chinese
+        uses: ephraimduncan/translate-readme@v1
+        with:
+          LANG: zh-TW
+
+      - name: Add README - Arabic
+        uses: ephraimduncan/translate-readme@v1
+        with:
+          LANG: ar 
