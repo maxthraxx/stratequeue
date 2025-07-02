@@ -13,6 +13,8 @@
 
 StrateQueue lets you deploy any Python trading strategy (**backtrader**, **zipline**, **vectorbt**, **backtrader**, etc.) to any broker with one command: ```stratequeue deploy --strategy ./your_script.py```. No code changes.
 
+[![Stargazers repo roster for @StrateQueue/StrateQueue](https://reporoster.com/stars/StrateQueue/StrateQueue)](https://github.com/StrateQueue/StrateQueue/stargazers)
+
 ## 📑 Table of Contents
 - [StrateQueue](#stratequeue)
   - [📑 Table of Contents](#-table-of-contents)
