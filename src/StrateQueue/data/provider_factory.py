@@ -100,15 +100,16 @@ class DataProviderFactory:
         except ImportError as e:
             logger.warning(f"Could not load Yahoo Finance data provider: {e}")
 
-        # Future data providers can be added here
+        # New: Alpaca provider
         try:
-            # from .sources.alpaca import AlpacaDataIngestion
-            # cls._providers['alpaca'] = AlpacaDataIngestion
-            # logger.debug("Registered Alpaca data provider")
-            pass
-        except ImportError:
-            # Alpaca data provider not implemented yet
-            pass
+            from .sources.alpaca import AlpacaDataIngestion
+            if AlpacaDataIngestion.dependencies_available():
+                cls._providers['alpaca'] = AlpacaDataIngestion
+                logger.debug("Registered Alpaca data provider")
+            else:
+                logger.debug("alpaca-py dependency missing – Alpaca provider skipped")
+        except ImportError as e:
+            logger.warning(f"Could not load Alpaca data provider: {e}")
 
         try:
             # from .sources.binance import BinanceDataIngestion
@@ -196,6 +197,20 @@ class DataProviderFactory:
         elif provider_type == "yfinance":
             return provider_class(config.granularity)
 
+        # New: Alpaca provider creation
+        elif provider_type == "alpaca":
+            # Expect api_key + secret_key in additional params or env
+            api_key = config.api_key or os.getenv("ALPACA_API_KEY")
+            secret_key = config.additional_params.get("secret_key") if config.additional_params else None
+            if not secret_key:
+                secret_key = os.getenv("ALPACA_SECRET_KEY")
+
+            if not (api_key and secret_key):
+                raise ValueError("Alpaca data provider requires ALPACA_API_KEY and ALPACA_SECRET_KEY")
+
+            paper = bool(os.getenv("ALPACA_PAPER", "1"))  # default to paper feed
+            return provider_class(api_key, secret_key, paper=paper, granularity=config.granularity)
+
         else:
             # Generic provider creation for future providers
             return provider_class(config)
@@ -218,6 +233,14 @@ class DataProviderFactory:
         elif provider_type == "demo":
             # Demo doesn't need any environment configuration
             pass
+
+        elif provider_type == "alpaca":
+            api_key = os.getenv('ALPACA_API_KEY')
+            secret_key = os.getenv('ALPACA_SECRET_KEY')
+            if api_key and secret_key:
+                config['api_key'] = api_key
+                config['secret_key'] = secret_key
+                config['paper_trading'] = bool(os.getenv('ALPACA_PAPER', '1'))
 
         # Common granularity setting
         granularity = os.getenv('DATA_GRANULARITY', "1m")
@@ -343,6 +366,23 @@ class DataProviderFactory:
                 supported_markets=["stocks", "etfs", "indices", "forex", "crypto"],
                 requires_api_key=False,
                 supported_granularities=["1m", "2m", "5m", "15m", "30m", "60m", "90m", "1h", "1d", "5d", "1wk", "1mo", "3mo"]
+            )
+
+        elif provider_type == "alpaca":
+            return DataProviderInfo(
+                name="Alpaca",
+                version="1.0",
+                supported_features={
+                    "historical_data": True,
+                    "real_time_data": True,
+                    "multiple_granularities": True,
+                    "stocks": True,
+                    "crypto": True
+                },
+                description="Market data via Alpaca Market Data API",
+                supported_markets=["stocks", "crypto"],
+                requires_api_key=True,
+                supported_granularities=["1m", "5m", "15m", "1h", "1d"]
             )
 
         else:
