@@ -58,8 +58,8 @@ class BaseDataIngestion(ABC):
 
 
     @abstractmethod
-    def subscribe_to_symbol(self, symbol: str):
-        """Subscribe to real-time data for a symbol"""
+    async def subscribe_to_symbol(self, symbol: str):
+        """Subscribe to real-time data for a symbol (async for providers that need it)"""
         pass
 
     @abstractmethod

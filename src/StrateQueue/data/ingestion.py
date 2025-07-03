@@ -68,8 +68,28 @@ def setup_data_ingestion(
 
         # For live data sources, subscribe to symbols
         if data_source != "demo":
-            for symbol in symbols:
-                data_ingestion.subscribe_to_symbol(symbol)
+            async def _subscribe_all():
+                tasks = []
+                for symbol in symbols:
+                    coro = data_ingestion.subscribe_to_symbol(symbol)
+                    # If provider implements async subscribe, we'll get a coroutine
+                    if asyncio.iscoroutine(coro):
+                        tasks.append(coro)
+                    else:
+                        # Legacy providers might still be sync
+                        continue
+                if tasks:
+                    await asyncio.gather(*tasks, return_exceptions=True)
+
+            # Run the async subscription helper
+            try:
+                asyncio.run(_subscribe_all())
+            except RuntimeError:
+                # If we're already inside an event loop (rare for CLI), schedule tasks instead
+                import nest_asyncio
+                nest_asyncio.apply()
+                loop = asyncio.get_event_loop()
+                loop.run_until_complete(_subscribe_all())
 
     # Fetch historical data only for FULL mode
     if mode == IngestionInit.FULL:

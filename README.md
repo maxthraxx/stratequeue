@@ -28,8 +28,7 @@ Backtest to live in seconds. StrateQueue lets you deploy any Python trading stra
 
 ## 📑 Table of Contents
 - [StrateQueue ](#stratequeue-)
-  <!--- - [🌍 README Translations](#-readme-translations) -->
-  - [� StrateQueue 📉](#-stratequeue-)
+  - [📈 StrateQueue 📉](#-stratequeue-)
   - [📑 Table of Contents](#-table-of-contents)
   - [🎯 Quick-start: From Backtest to Live in One Command](#-quick-start-from-backtest-to-live-in-one-command)
     - [Your existing backtest:](#your-existing-backtest)
@@ -127,7 +126,7 @@ stratequeue webui
 | ├─ yfinance | ✅ Implemented |
 | ├─ Polygon.io | ✅ Implemented |
 | ├─ CoinMarketCap | ✅ Implemented |
-| ├─ Alpaca | ❌ Coming Soon |
+| ├─ Alpaca | ✅ Implemented |
 | └─ Interactive Brokers | ❌ Coming Soon |
 
 ## ✨ Why StrateQueue?

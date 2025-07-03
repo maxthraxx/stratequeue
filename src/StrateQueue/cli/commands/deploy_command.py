@@ -81,7 +81,7 @@ class DeployCommand(BaseCommand):
         parser.add_argument(
             '--data-source',
             default='demo',
-            help='Data source(s). Single value applies to all, or comma-separated list matching strategies (e.g., demo or polygon,coinmarketcap)'
+            help='Data source(s). Single value applies to all, or comma-separated list matching strategies (e.g., demo or polygon,coinmarketcap). Auto-detects to "alpaca" if Alpaca broker is configured.'
         )
 
         parser.add_argument(

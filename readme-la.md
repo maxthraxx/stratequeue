@@ -23,8 +23,7 @@ Backtest vivere in seconds. Stratequeue lets deploy quis Python negotiatione bel
 ## 📑 Table of Contents
 
 -   [StrateQueue](#stratequeue-)
-    <!--- - [🌍 README Translations](#-readme-translations) -->
-    -   [� StrateQueue 📉](#-stratequeue-)
+    -   [📈 StrateQueue 📉](#-stratequeue-)
     -   [📑 Table of Contents](#-table-of-contents)
     -   [🎯 Velox-satus: a backtest ad vivere in unum imperium](#-quick-start-from-backtest-to-live-in-one-command)
         -   [Tua existentium backtest:](#your-existing-backtest)
@@ -125,7 +124,7 @@ stratequeue webui
 | ├age yfinance               | ✅ implemented |
 | Cle Cle Polygon.io          | ✅ implemented |
 | ├cam coinmarketcap          | ✅ implemented |
-| ├age alpaca                 | ❌ venire cito |
+| ├age alpaca                 | ✅ implemented |
 | └─ Interactive sectoribus   | ❌ venire cito |
 
 ## ✨ Quid stratequeue?

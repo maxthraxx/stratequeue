@@ -75,7 +75,7 @@ class DataManager:
         for symbol in self.symbols:
             try:
                 # Subscribe to real-time data for this symbol
-                self.data_ingester.subscribe_to_symbol(symbol)
+                await self.data_ingester.subscribe_to_symbol(symbol)
 
                 # Try to fetch historical data with granularity
                 historical_data = await self.data_ingester.fetch_historical_data(
@@ -154,7 +154,16 @@ class DataManager:
                 if symbol in self.cumulative_data and len(self.cumulative_data[symbol]) > 0:
                     # Check if this is a new timestamp (avoid duplicates)
                     last_timestamp = self.cumulative_data[symbol].index[-1]
-                    time_diff = (current_data.timestamp - last_timestamp).total_seconds()
+                    
+                    # Ensure both timestamps are timezone-naive for comparison
+                    current_ts = current_data.timestamp
+                    if current_ts.tzinfo is not None:
+                        current_ts = current_ts.replace(tzinfo=None)
+                    
+                    if hasattr(last_timestamp, 'tzinfo') and last_timestamp.tzinfo is not None:
+                        last_timestamp = last_timestamp.replace(tzinfo=None)
+                    
+                    time_diff = (current_ts - last_timestamp).total_seconds()
 
                     # Add a new bar whenever we move to a *new* timestamp,
                     # or while we are still building up the initial look-back window.
@@ -221,7 +230,21 @@ class DataManager:
 
             # Subscribe to symbol if using real data source
             if self.data_ingester and self.data_source != "demo":
-                self.data_ingester.subscribe_to_symbol(symbol)
+                # Note: This is called from sync context, so we need to handle async subscription
+                import asyncio
+                try:
+                    loop = asyncio.get_running_loop()
+                    # Schedule subscription on the event loop
+                    loop.create_task(self.data_ingester.subscribe_to_symbol(symbol))
+                except RuntimeError:
+                    # No event loop running, call synchronously if provider supports it
+                    if hasattr(self.data_ingester, 'subscribe_to_symbol'):
+                        # For providers that don't need async subscription, call directly
+                        try:
+                            self.data_ingester.subscribe_to_symbol(symbol)
+                        except TypeError:
+                            # Provider requires async call but no loop available
+                            logger.warning(f"Cannot subscribe to {symbol} - provider requires async context")
 
             logger.info(f"🔥 Added symbol {symbol} to data tracking at runtime")
             return True
