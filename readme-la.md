@@ -40,7 +40,7 @@ Backtest vivere in seconds. Stratequeue lets deploy quis Python negotiatione bel
     -   [⚠️ Disclaimer - Non investment consilium](#️-disclaimer--no-investment-advice)
     -   [© License](#-license)
 
-## 🎯 Quick-start: From Backtest to Live in One Command
+## 🎯 Velox-satus: a backtest ad vivere in unum imperium
 
 ### Tua existentium backtest:
 
