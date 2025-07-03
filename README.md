@@ -1,8 +1,10 @@
 # StrateQueue [![Tweet](https://img.shields.io/twitter/url/http/shields.io.svg?style=social)](https://twitter.com/intent/tweet?text=Take%20your%20zipline,%20vectorbt,%20backtesting.py,%20or%20backtrader%20strategies%20live%20with%20zero%20code%20changes&url=https://stratequeue.com&hashtags=python,backtesting,trading,zipline,vectorbt,quant) 
 
 [![PyPI version](https://badge.fury.io/py/stratequeue.svg?refresh=1)](https://badge.fury.io/py/stratequeue)
+[![PyPI status](https://img.shields.io/pypi/status/stratequeue.svg)](https://pypi.python.org/pypi/stratequeue/)
 [![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
 [![License: AGPL-3.0](https://img.shields.io/badge/License-AGPL--3.0-yellow.svg)](https://github.com/StrateQueue/StrateQueue/blob/main/LICENSE)
+[![GitHub contributors](https://img.shields.io/github/contributors/StrateQueue/StrateQueue)](https://github.com/StrateQueue/StrateQueue/graphs/contributors)
 [![Downloads](https://pepy.tech/badge/stratequeue)](https://pepy.tech/project/stratequeue)
 [![GitHub stars](https://img.shields.io/github/stars/StrateQueue/StrateQueue?refresh=1)](https://github.com/StrateQueue/StrateQueue/stargazers)
 <!---[![codecov](https://codecov.io/gh/stratequeue/stratequeue/branch/main/graph/badge.svg)](https://codecov.io/gh/stratequeue/stratequeue)-->
