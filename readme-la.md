@@ -1,16 +1,20 @@
 # StrateQueue[![Tweet](https://img.shields.io/twitter/url/http/shields.io.svg?style=social)](https://twitter.com/intent/tweet?text=Take%20your%20zipline,%20vectorbt,%20backtesting.py,%20or%20backtrader%20strategies%20live%20with%20zero%20code%20changes&url=https://stratequeue.com&hashtags=python,backtesting,trading,zipline,vectorbt,quant)
 
-[![PyPI version](https://badge.fury.io/py/stratequeue.svg?refresh=1)](https://badge.fury.io/py/stratequeue)[![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)[![License: AGPL-3.0](https://img.shields.io/badge/License-AGPL--3.0-yellow.svg)](https://github.com/StrateQueue/StrateQueue/blob/main/LICENSE)[![Downloads](https://pepy.tech/badge/stratequeue)](https://pepy.tech/project/stratequeue)[![GitHub stars](https://img.shields.io/github/stars/StrateQueue/StrateQueue?refresh=1)](https://github.com/StrateQueue/StrateQueue/stargazers)
+[![PyPI version](https://badge.fury.io/py/stratequeue.svg?refresh=1)](https://badge.fury.io/py/stratequeue)[![PyPI status](https://img.shields.io/pypi/status/stratequeue.svg)](https://pypi.python.org/pypi/stratequeue/)[![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)[![License: AGPL-3.0](https://img.shields.io/badge/License-AGPL--3.0-yellow.svg)](https://github.com/StrateQueue/StrateQueue/blob/main/LICENSE)[![GitHub contributors](https://img.shields.io/github/contributors/StrateQueue/StrateQueue)](https://github.com/StrateQueue/StrateQueue/graphs/contributors)[![Downloads](https://pepy.tech/badge/stratequeue)](https://pepy.tech/project/stratequeue)[![GitHub stars](https://img.shields.io/github/stars/StrateQueue/StrateQueue?refresh=1)](https://github.com/StrateQueue/StrateQueue/stargazers)
 
 <!---[![codecov](https://codecov.io/gh/stratequeue/stratequeue/branch/main/graph/badge.svg)](https://codecov.io/gh/stratequeue/stratequeue)-->
 
 📖**[Documenta](https://stratequeue.com/docs)**Squama 🚀**[Velox Start Guide](https://www.stratequeue.com/docs/quick-start)**Squama 💬**[Conmunitas](https://discord.gg/H4hWAXJYqX)**
 
-> **Et celerrime iter a backtest ad vivere negotiatione**
+> **Et celerrime iter a backtest ad vivere negotiatione**[![Stargazers repo roster for @StrateQueue/StrateQueue](https://reporoster.com/stars/StrateQueue/StrateQueue)](https://github.com/StrateQueue/StrateQueue/stargazers)
 
-## 🌍 readme Translations
+> ⭐️ Si stratequeue salvus erit vobis et docuit vos aliquid, consideramus[Surning nos in Github](https://github.com/StrateQueue/StrateQueue)- Is iuvat magis quinks invenire in project!
 
-[🇺🇸 Latina](README.md)•[🇨🇳 Simplified Chinese](README.zh-CN.md)•[Traditional Chinese](README.zh-TW.md)•[🇮🇳 Hindi](README.hi.md)•[🇫🇷 Gallica](README.fr.md)•[Arabic](README.ar.md)
+<!---
+## 🌍 README Translations
+
+[🇺🇸 English](README.md) • [🇨🇳 简体中文](README.zh-CN.md) • [繁體中文](README.zh-TW.md) • [🇮🇳 हिंदी](README.hi.md) • [🇫🇷 Français](README.fr.md) • [🇸🇦 العربية](README.ar.md)
+-->
 
 ## 📈 StrateQueue 📉
 
@@ -19,10 +23,10 @@ Backtest vivere in seconds. Stratequeue lets deploy quis Python negotiatione bel
 ## 📑 Table of Contents
 
 -   [StrateQueue](#stratequeue-)
-    -   [🌍 readme Translations](#-readme-translations)
+    <!--- - [🌍 README Translations](#-readme-translations) -->
     -   [� StrateQueue 📉](#-stratequeue-)
     -   [📑 Table of Contents](#-table-of-contents)
-    -   [🎯 De Magia: a backtest ut vivere in uno imperium](#-the-magic-from-backtest-to-live-in-one-command)
+    -   [🎯 Velox-satus: a backtest ad vivere in unum imperium](#-quick-start-from-backtest-to-live-in-one-command)
         -   [Tua existentium backtest:](#your-existing-backtest)
         -   [Deploy ad Vivamus Trading:](#deploy-to-live-trading)
     -   [🛠️ Pertifisites](#️-prerequisites)
@@ -36,7 +40,7 @@ Backtest vivere in seconds. Stratequeue lets deploy quis Python negotiatione bel
     -   [⚠️ Disclaimer - Non investment consilium](#️-disclaimer--no-investment-advice)
     -   [© License](#-license)
 
-## 🎯 De Magia: a backtest ut vivere in uno imperium
+## 🎯 Velox-satus: a backtest ad vivere in unum imperium
 
 ### Tua existentium backtest:
 
@@ -115,7 +119,7 @@ stratequeue webui
 | **Sectores**                |               |
 | ├age alpaca                 | ✅ implemented |
 | ├cam interactive sectoribus | ✅ implemented |
-| ├age kraken                 | ❌ implemented |
+| ├age kraken                 | ❌ venire cito |
 | └─ binance                  | ❌ venire cito |
 | **Data providers**          |               |
 | ├age yfinance               | ✅ implemented |
@@ -126,7 +130,7 @@ stratequeue webui
 
 ## ✨ Quid stratequeue?
 
-**🛡️ tutum per default** — Signals-only mode by default. No accidental trades.
+**🛡️ tutum per default**- annuit, solum modus per default. Non accidentalis artium.
 
 **🔌 engine agnostic**- Works cum backtesting.py, vectorbt, backtrader, zipline-reloaded, et magis venire cito.
 
