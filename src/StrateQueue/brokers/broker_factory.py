@@ -220,7 +220,16 @@ class BrokerFactory:
             broker_class = cls._brokers[broker_type]
             # Create minimal config for info retrieval
             temp_config = BrokerConfig(broker_type=broker_type)
-            temp_broker = broker_class(temp_config)
+            
+            # Use the same logic as create_broker for constructor arguments
+            normalized_broker_type = cls._normalize_broker_type(broker_type)
+            if normalized_broker_type == 'alpaca':
+                temp_broker = broker_class(temp_config, None, None, None)
+            elif normalized_broker_type in ['ibkr', 'ib_gateway']:
+                temp_broker = broker_class(temp_config, None, None)
+            else:
+                temp_broker = broker_class(temp_config, None, None)
+            
             return temp_broker.get_broker_info()
         except Exception as e:
             logger.error(f"Error getting broker info for {broker_type}: {e}")
