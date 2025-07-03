@@ -46,7 +46,7 @@ class _StubIngester:
     def start_realtime_feed(self):
         self.realtime_started = True
 
-    def subscribe_to_symbol(self, sym: str):
+    async def subscribe_to_symbol(self, sym: str):
         self.calls["sub"].append(sym)
 
     async def fetch_historical_data(self, sym: str, **_kw):
