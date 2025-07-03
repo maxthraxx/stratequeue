@@ -8,6 +8,8 @@
 
 > **Et celerrime iter a backtest ad vivere negotiatione**[![Stargazers repo roster for @StrateQueue/StrateQueue](https://reporoster.com/stars/StrateQueue/StrateQueue)](https://github.com/StrateQueue/StrateQueue/stargazers)
 
+> ⭐️ Si stratequeue salvus erit vobis et docuit vos aliquid, consideramus[Surning nos in Github](https://github.com/StrateQueue/StrateQueue)- Is iuvat magis quinks invenire in project!
+
 <!---
 ## 🌍 README Translations
 
@@ -21,10 +23,10 @@ Backtest vivere in seconds. Stratequeue lets deploy quis Python negotiatione bel
 ## 📑 Table of Contents
 
 -   [StrateQueue](#stratequeue-)
-    -   [🌍 readme Translations](#-readme-translations)
+    <!--- - [🌍 README Translations](#-readme-translations) -->
     -   [� StrateQueue 📉](#-stratequeue-)
     -   [📑 Table of Contents](#-table-of-contents)
-    -   [🎯 De Magia: a backtest ut vivere in uno imperium](#-the-magic-from-backtest-to-live-in-one-command)
+    -   [🎯 Velox-satus: a backtest ad vivere in unum imperium](#-quick-start-from-backtest-to-live-in-one-command)
         -   [Tua existentium backtest:](#your-existing-backtest)
         -   [Deploy ad Vivamus Trading:](#deploy-to-live-trading)
     -   [🛠️ Pertifisites](#️-prerequisites)
@@ -38,7 +40,7 @@ Backtest vivere in seconds. Stratequeue lets deploy quis Python negotiatione bel
     -   [⚠️ Disclaimer - Non investment consilium](#️-disclaimer--no-investment-advice)
     -   [© License](#-license)
 
-## 🎯 De Magia: a backtest ut vivere in uno imperium
+## 🎯 Quick-start: From Backtest to Live in One Command
 
 ### Tua existentium backtest:
 
@@ -117,7 +119,7 @@ stratequeue webui
 | **Sectores**                |               |
 | ├age alpaca                 | ✅ implemented |
 | ├cam interactive sectoribus | ✅ implemented |
-| ├age kraken                 | ❌ implemented |
+| ├age kraken                 | ❌ venire cito |
 | └─ binance                  | ❌ venire cito |
 | **Data providers**          |               |
 | ├age yfinance               | ✅ implemented |
