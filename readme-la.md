@@ -10,7 +10,7 @@
 
 ## 🌍 readme Translations
 
-[🇺🇸 Latina](README.md)•[🇨🇳 Simplified Chinese](README.zh-CN.md)•[Traditional Chinese](README.zh-TW.md)•[🇮🇳 हिंदी](README.hi.md)•[🇫🇷 Gallica](README.fr.md)•[🇸🇦 العربية](README.ar.md)
+[🇺🇸 Latina](README.md)•[🇨🇳 Simplified Chinese](README.zh-CN.md)•[Traditional Chinese](README.zh-TW.md)•[🇮🇳 Hindi](README.hi.md)•[🇫🇷 Gallica](README.fr.md)•[Arabic](README.ar.md)
 
 ## 📈 StrateQueue 📉
 
@@ -120,7 +120,7 @@ stratequeue webui
 | **Data providers**          |               |
 | ├age yfinance               | ✅ implemented |
 | Cle Cle Polygon.io          | ✅ implemented |
-| ├cam coinmarketcap          | ✅ implemented |
+| ├cam coinmarketcap          | ✅ Implemented |
 | ├age alpaca                 | ✅ implemented |
 | └─ Interactive sectoribus   | ❌ venire cito |
 
