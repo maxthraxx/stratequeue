@@ -32,7 +32,7 @@ Backtest vivere in seconds. Stratequeue lets deploy quis Python negotiatione bel
     -   [📥 Installation](#-installation)
         -   [Setup](#setup)
         -   [Dashboard (experimentalem)](#dashboard-experimental)
-    -   [🔧 Supported Integrations](#-supported-integrations)
+    -   [🔧 fulcitur integrations](#-supported-integrations)
     -   [✨ Quid stratequeue?](#-why-stratequeue)
     -   [🔄 Quomodo operatur](#-how-it-works)
     -   [Stella historia](#star-history)
