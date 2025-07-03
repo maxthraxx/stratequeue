@@ -10,7 +10,7 @@
 
 ## 🌍 readme Translations
 
-[🇺🇸 Latina](README.md)•[🇨🇳 Simplified Chinese](README.zh-CN.md)•[Traditional Chinese](README.zh-TW.md)•[🇮🇳 Hindi](README.hi.md)•[🇫🇷 Gallica](README.fr.md)•[Arabic](README.ar.md)
+[🇺🇸 Latina](README.md)•[🇨🇳 Simplified Chinese](README.zh-CN.md)•[Traditional Chinese](README.zh-TW.md)•[🇮🇳 हिंदी](README.hi.md)•[🇫🇷 Gallica](README.fr.md)•[🇸🇦 العربية](README.ar.md)
 
 ## 📈 StrateQueue 📉
 
@@ -20,7 +20,7 @@ Backtest vivere in seconds. Stratequeue lets deploy quis Python negotiatione bel
 
 -   [StrateQueue](#stratequeue-)
     -   [🌍 readme Translations](#-readme-translations)
-    -   [� StrateQueue 📉](#-stratequeue-)
+    -   [📈 StrateQueue 📉](#-stratequeue-)
     -   [📑 Table of Contents](#-table-of-contents)
     -   [🎯 De Magia: a backtest ut vivere in uno imperium](#-the-magic-from-backtest-to-live-in-one-command)
         -   [Tua existentium backtest:](#your-existing-backtest)
@@ -121,12 +121,12 @@ stratequeue webui
 | ├age yfinance               | ✅ implemented |
 | Cle Cle Polygon.io          | ✅ implemented |
 | ├cam coinmarketcap          | ✅ implemented |
-| ├age alpaca                 | ❌ venire cito |
+| ├age alpaca                 | ✅ implemented |
 | └─ Interactive sectoribus   | ❌ venire cito |
 
 ## ✨ Quid stratequeue?
 
-**🛡️ tutum per default** — Signals-only mode by default. No accidental trades.
+**🛡️ tutum per default**- annuit, solum modus per default. Non accidentalis artium.
 
 **🔌 engine agnostic**- Works cum backtesting.py, vectorbt, backtrader, zipline-reloaded, et magis venire cito.
 
