@@ -14,6 +14,8 @@
 > **The fastest way from backtest to live trading**
 [![Stargazers repo roster for @StrateQueue/StrateQueue](https://reporoster.com/stars/StrateQueue/StrateQueue)](https://github.com/StrateQueue/StrateQueue/stargazers)
 
+> ⭐️ If StrateQueue saved you time or taught you something, consider [starring us on GitHub](https://github.com/StrateQueue/StrateQueue) — it helps more quants discover the project!
+
 <!---
 ## 🌍 README Translations
 
@@ -26,10 +28,10 @@ Backtest to live in seconds. StrateQueue lets you deploy any Python trading stra
 
 ## 📑 Table of Contents
 - [StrateQueue ](#stratequeue-)
-  - [🌍 README Translations](#-readme-translations)
+  <!--- - [🌍 README Translations](#-readme-translations) -->
   - [� StrateQueue 📉](#-stratequeue-)
   - [📑 Table of Contents](#-table-of-contents)
-  - [🎯 The Magic: From Backtest to Live in One Command](#-the-magic-from-backtest-to-live-in-one-command)
+  - [🎯 Quick-start: From Backtest to Live in One Command](#-quick-start-from-backtest-to-live-in-one-command)
     - [Your existing backtest:](#your-existing-backtest)
     - [Deploy to live trading:](#deploy-to-live-trading)
   - [🛠️ Prerequisites](#️-prerequisites)
@@ -43,7 +45,7 @@ Backtest to live in seconds. StrateQueue lets you deploy any Python trading stra
   - [⚠️ Disclaimer – No Investment Advice](#️-disclaimer--no-investment-advice)
   - [© License](#-license)
 
-## 🎯 The Magic: From Backtest to Live in One Command
+## 🎯 Quick-start: From Backtest to Live in One Command
 ### Your existing backtest:
 ```python
 class SMAStrategy(Strategy):
@@ -119,7 +121,7 @@ stratequeue webui
 | **Brokers** | |
 | ├─ Alpaca | ✅ Implemented |
 | ├─ Interactive Brokers | ✅ Implemented |
-| ├─ Kraken | ❌ Implemented |
+| ├─ Kraken | ❌ Coming Soon |
 | └─ Binance | ❌ Coming Soon |
 | **Data Providers** | |
 | ├─ yfinance | ✅ Implemented |
