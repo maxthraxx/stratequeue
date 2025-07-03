@@ -4,7 +4,7 @@
 
 <!---[![codecov](https://codecov.io/gh/stratequeue/stratequeue/branch/main/graph/badge.svg)](https://codecov.io/gh/stratequeue/stratequeue)-->
 
-📖**[Documenta](https://stratequeue.com/docs)**Squama 🚀**[Velox Start Guide](https://www.stratequeue.com/docs/quick-start)**Squama 💬**[Conmunitas](https://discord.gg/H4hWAXJYqX)**
+📖**[Documenta](https://stratequeue.com/docs)** | 🚀 **[Velox Start Guide](https://www.stratequeue.com/docs/quick-start)**Squama 💬**[Conmunitas](https://discord.gg/H4hWAXJYqX)**
 
 > **Et celerrime iter a backtest ad vivere negotiatione**[![Stargazers repo roster for @StrateQueue/StrateQueue](https://reporoster.com/stars/StrateQueue/StrateQueue)](https://github.com/StrateQueue/StrateQueue/stargazers)
 
@@ -16,7 +16,7 @@
 
 ## 📈 StrateQueue 📉
 
-Backtest vivere in seconds. Stratequeue lets deploy quis Python negotiatione belli (**backtrader**,**Zipline**,**vectorbt**,**backtrader**, Etc.) ad ulla sectorem cum uno mandatum:`stratequeue deploy --strategy ./your_script.py`. Nulla codice mutationes.
+Backtest vivere in seconds. Stratequeue lets deploy quis Python negotiatione belli (**backtrader**,**Zipline**,**vectorbt**, **backtrader**, Etc.) ad ulla sectorem cum uno mandatum:`stratequeue deploy --strategy ./your_script.py`. Nulla codice mutationes.
 
 ## 📑 Table of Contents
 
@@ -128,7 +128,7 @@ stratequeue webui
 
 ## ✨ Quid stratequeue?
 
-**🛡️ Safe by Default**- annuit, solum modus per default. Non accidentalis artium.
+**🛡️ tutum per default**- annuit, solum modus per default. Non accidentalis artium.
 
 **🔌 engine agnostic**- Works cum backtesting.py, vectorbt, backtrader, zipline-reloaded, et magis venire cito.
 
@@ -150,7 +150,7 @@ Stratequeue est aperta-fonte Toolkit provisum**"Sicut, est" pro educational et i
 
 -   Facit**non**constituere investment consilium, brokerage officia, aut commendaticiis emere aut vendere aliqua financial instrumentum.
 -   Omnes negotiationem involves substantial periculo**Praeterita perficientur non indicativo futuris results**. Vos may perdere aliquas et omnia tua capitis.
--   Per usura stratequeue agnoscere quod**Tu solus es responsible pro negotiatione decisions**et conveniunt, quod stratequeue mainttainers et contibriores erit**non obnoxia pro nulla damnum vel damnum** arising from the use of this software.
+-   Per usura stratequeue agnoscere quod**Tu solus es responsible pro negotiatione decisions**et conveniunt, quod stratequeue mainttainers et contibriores erit**non obnoxia pro nulla damnum vel damnum**ex usu huius software.
 -   Consule qualified financial professional ante explicando vivere capitis.
 
 ## © License
