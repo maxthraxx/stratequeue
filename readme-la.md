@@ -4,7 +4,7 @@
 
 <!---[![codecov](https://codecov.io/gh/stratequeue/stratequeue/branch/main/graph/badge.svg)](https://codecov.io/gh/stratequeue/stratequeue)-->
 
-📖**[Documenta](https://stratequeue.com/docs)** | 🚀 **[Velox Start Guide](https://www.stratequeue.com/docs/quick-start)**Squama 💬**[Conmunitas](https://discord.gg/H4hWAXJYqX)**
+📖**[Documenta](https://stratequeue.com/docs)**Squama 🚀**[Velox Start Guide](https://www.stratequeue.com/docs/quick-start)**Squama 💬**[Conmunitas](https://discord.gg/H4hWAXJYqX)**
 
 > **Et celerrime iter a backtest ad vivere negotiatione**[![Stargazers repo roster for @StrateQueue/StrateQueue](https://reporoster.com/stars/StrateQueue/StrateQueue)](https://github.com/StrateQueue/StrateQueue/stargazers)
 
@@ -16,7 +16,7 @@
 
 ## 📈 StrateQueue 📉
 
-Backtest vivere in seconds. Stratequeue lets deploy quis Python negotiatione belli (**backtrader**,**Zipline**,**vectorbt**, **backtrader**, Etc.) ad ulla sectorem cum uno mandatum:`stratequeue deploy --strategy ./your_script.py`. Nulla codice mutationes.
+Backtest vivere in seconds. Stratequeue lets deploy quis Python negotiatione belli (**backtrader**,**Zipline**,**vectorbt**,**backtrader**, Etc.) ad ulla sectorem cum uno mandatum:`stratequeue deploy --strategy ./your_script.py`. Nulla codice mutationes.
 
 ## 📑 Table of Contents
 
@@ -114,7 +114,7 @@ stratequeue webui
 | ├─ vectorbt                 | ✅ implemented |
 | ├age backtrader             | ✅ implemented |
 | └─ Zipline-Reloaded         | ✅ implemented |
-| **Sectoribus**              |               |
+| **Sectores**                |               |
 | ├age alpaca                 | ✅ implemented |
 | ├cam interactive sectoribus | ✅ implemented |
 | ├age kraken                 | ❌ implemented |
