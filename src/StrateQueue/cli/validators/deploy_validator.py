@@ -112,6 +112,28 @@ class DeployValidator(BaseValidator):
         granularities = parse_comma_separated(args.granularity) if args.granularity else []
         brokers = parse_comma_separated(args.broker) if args.broker else []
 
+        # Auto-detect data source based on broker if using default 'demo'
+        if data_sources == ['demo'] and args.data_source == 'demo':
+            # Check if broker is specified or can be auto-detected
+            detected_broker = None
+            
+            if brokers and brokers[0]:
+                # Broker explicitly specified
+                detected_broker = brokers[0]
+            else:
+                # Try to auto-detect broker from environment
+                try:
+                    from ...brokers import detect_broker_type
+                    detected_broker = detect_broker_type()
+                except ImportError:
+                    pass
+            
+            # If Alpaca broker detected, use Alpaca data source
+            if detected_broker == 'alpaca':
+                data_sources = ['alpaca']
+                print("🔗 Auto-detected Alpaca broker - using Alpaca data source")
+                print("💡 Override with --data-source if you prefer a different source")
+
         # Apply smart defaults for multi-value arguments
         try:
             if len(strategies) > 1:

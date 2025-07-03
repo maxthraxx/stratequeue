@@ -100,14 +100,14 @@ class DataProviderFactory:
         except ImportError as e:
             logger.warning(f"Could not load Yahoo Finance data provider: {e}")
 
-        # New: Alpaca provider
+        # New: Alpaca provider (register even if SDK missing so error surfaces at creation time)
         try:
             from .sources.alpaca import AlpacaDataIngestion
+            cls._providers['alpaca'] = AlpacaDataIngestion
             if AlpacaDataIngestion.dependencies_available():
-                cls._providers['alpaca'] = AlpacaDataIngestion
                 logger.debug("Registered Alpaca data provider")
             else:
-                logger.debug("alpaca-py dependency missing – Alpaca provider skipped")
+                logger.debug("Alpaca provider registered but SDK not available; will raise at instantiation")
         except ImportError as e:
             logger.warning(f"Could not load Alpaca data provider: {e}")
 
@@ -199,14 +199,25 @@ class DataProviderFactory:
 
         # New: Alpaca provider creation
         elif provider_type == "alpaca":
-            # Expect api_key + secret_key in additional params or env
-            api_key = config.api_key or os.getenv("ALPACA_API_KEY")
+            # Support multiple credential naming conventions (same as broker)
+            api_key = config.api_key
+            if not api_key:
+                api_key = (
+                    os.getenv("PAPER_KEY") or
+                    os.getenv("PAPER_API_KEY") or
+                    os.getenv("ALPACA_API_KEY")
+                )
+            
             secret_key = config.additional_params.get("secret_key") if config.additional_params else None
             if not secret_key:
-                secret_key = os.getenv("ALPACA_SECRET_KEY")
+                secret_key = (
+                    os.getenv("PAPER_SECRET") or
+                    os.getenv("PAPER_SECRET_KEY") or
+                    os.getenv("ALPACA_SECRET_KEY")
+                )
 
             if not (api_key and secret_key):
-                raise ValueError("Alpaca data provider requires ALPACA_API_KEY and ALPACA_SECRET_KEY")
+                raise ValueError("Alpaca data provider requires credentials. Set PAPER_KEY/PAPER_SECRET or ALPACA_API_KEY/ALPACA_SECRET_KEY")
 
             paper = bool(os.getenv("ALPACA_PAPER", "1"))  # default to paper feed
             return provider_class(api_key, secret_key, paper=paper, granularity=config.granularity)
@@ -235,8 +246,17 @@ class DataProviderFactory:
             pass
 
         elif provider_type == "alpaca":
-            api_key = os.getenv('ALPACA_API_KEY')
-            secret_key = os.getenv('ALPACA_SECRET_KEY')
+            # Support multiple credential naming conventions (same as broker)
+            api_key = (
+                os.getenv('PAPER_KEY') or
+                os.getenv('PAPER_API_KEY') or
+                os.getenv('ALPACA_API_KEY')
+            )
+            secret_key = (
+                os.getenv('PAPER_SECRET') or
+                os.getenv('PAPER_SECRET_KEY') or
+                os.getenv('ALPACA_SECRET_KEY')
+            )
             if api_key and secret_key:
                 config['api_key'] = api_key
                 config['secret_key'] = secret_key
@@ -407,6 +427,21 @@ def detect_provider_type() -> str:
         if os.getenv('CMC_API_KEY'):
             logger.info("Detected CoinMarketCap API key, suggesting coinmarketcap provider")
             return 'coinmarketcap'
+
+        # Check for Alpaca credentials (support multiple naming conventions)
+        alpaca_key = (
+            os.getenv('PAPER_KEY') or
+            os.getenv('PAPER_API_KEY') or
+            os.getenv('ALPACA_API_KEY')
+        )
+        alpaca_secret = (
+            os.getenv('PAPER_SECRET') or
+            os.getenv('PAPER_SECRET_KEY') or
+            os.getenv('ALPACA_SECRET_KEY')
+        )
+        if alpaca_key and alpaca_secret:
+            logger.info("Detected Alpaca credentials, suggesting alpaca provider")
+            return 'alpaca'
 
         # Check for explicit provider setting
         explicit_provider = os.getenv('DATA_PROVIDER')

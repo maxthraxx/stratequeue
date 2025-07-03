@@ -347,7 +347,7 @@ class TestDataIngestion(BaseDataIngestion):
 
         logger.info("Test data simulation stopped")
 
-    def subscribe_to_symbol(self, symbol: str):
+    async def subscribe_to_symbol(self, symbol: str):
         """Subscribe to real-time data for a symbol"""
         if symbol not in self.subscribed_symbols:
             self.subscribed_symbols.append(symbol)

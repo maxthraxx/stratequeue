@@ -887,8 +887,15 @@ class AlpacaBroker(BaseBroker):
             # Add quantity or notional
             if notional_amount:
                 base_params["notional"] = notional_amount
+                # CRITICAL: Alpaca requires fractional orders to be DAY orders
+                if not is_crypto:
+                    base_params["time_in_force"] = TimeInForce.DAY
             else:
                 base_params["qty"] = quantity
+                # CRITICAL: Alpaca requires fractional orders to be DAY orders
+                # Check if this is a fractional quantity for stocks
+                if not is_crypto and quantity is not None and quantity != int(quantity):
+                    base_params["time_in_force"] = TimeInForce.DAY
 
             # Create order request based on signal type
             if signal.signal in [SignalType.BUY, SignalType.SELL, SignalType.CLOSE]:

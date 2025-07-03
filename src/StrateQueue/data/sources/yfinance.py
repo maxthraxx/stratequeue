@@ -223,11 +223,10 @@ class YahooFinanceDataIngestion(BaseDataIngestion):
                 logger.error(f"Error in Yahoo Finance simulation loop: {e}")
                 time.sleep(5)  # Brief pause before retrying
 
-    def subscribe_to_symbol(self, symbol: str):
+    async def subscribe_to_symbol(self, symbol: str):
         """Subscribe to real-time data for a symbol"""
-        symbol = symbol.upper()
         self.subscribed_symbols.add(symbol)
-        logger.info(f"Subscribed to Yahoo Finance data for {symbol}")
+        logger.info(f"Subscribed to {symbol} for real-time data")
 
     def start_realtime_feed(self):
         """Start the real-time data simulation"""

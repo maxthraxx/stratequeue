@@ -139,18 +139,10 @@ class PolygonDataIngestion(BaseDataIngestion):
         auth_message = {"action": "auth", "params": self.api_key}
         ws.send(json.dumps(auth_message))
 
-    def subscribe_to_symbol(self, symbol: str):
+    async def subscribe_to_symbol(self, symbol: str):
         """Subscribe to real-time data for a symbol"""
-        if not self.is_connected:
-            logger.warning("WebSocket not connected. Cannot subscribe.")
-            return
-
-        subscribe_message = {
-            "action": "subscribe",
-            "params": f"AM.{symbol}",  # Aggregate minute bars
-        }
-        self.ws.send(json.dumps(subscribe_message))
-        logger.info(f"Subscribed to {symbol}")
+        self.subscribed_symbols.add(symbol)
+        logger.info(f"Subscribed to {symbol} for real-time data")
 
     def start_realtime_feed(self):
         """Start the real-time WebSocket connection"""

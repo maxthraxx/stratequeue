@@ -321,10 +321,10 @@ class CoinMarketCapDataIngestion(BaseDataIngestion):
 
         logger.info("CoinMarketCap simulation stopped")
 
-    def subscribe_to_symbol(self, symbol: str):
+    async def subscribe_to_symbol(self, symbol: str):
         """Subscribe to real-time data for a symbol"""
-        logger.info(f"Subscribed to {symbol} on CoinMarketCap")
         self.subscribed_symbols.add(symbol)
+        logger.info(f"Subscribed to {symbol} for real-time data")
 
         # Initialize with empty data - will be populated by simulation
         if symbol not in self.current_bars:
