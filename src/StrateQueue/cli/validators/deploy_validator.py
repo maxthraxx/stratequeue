@@ -128,10 +128,14 @@ class DeployValidator(BaseValidator):
                 except ImportError:
                     pass
             
-            # If Alpaca broker detected, use Alpaca data source
+            # Auto-pair broker with matching data source
             if detected_broker == 'alpaca':
                 data_sources = ['alpaca']
                 print("🔗 Auto-detected Alpaca broker - using Alpaca data source")
+                print("💡 Override with --data-source if you prefer a different source")
+            elif detected_broker in ['ibkr', 'IBKR', 'interactive-brokers', 'interactive_brokers', 'ib_gateway', 'ibkr_gateway', 'ib-gateway', 'gateway']:
+                data_sources = ['ibkr']
+                print("🔗 Auto-detected IBKR broker - using IBKR data source")
                 print("💡 Override with --data-source if you prefer a different source")
 
         # Apply smart defaults for multi-value arguments

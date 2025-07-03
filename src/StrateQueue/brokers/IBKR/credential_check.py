@@ -24,7 +24,7 @@ except ImportError:
 logger = logging.getLogger(__name__)
 
 
-def test_ibkr_credentials(host: str = "127.0.0.1", port: int = 7497, client_id: int = 1, timeout: int = 5) -> bool:
+def test_ibkr_credentials(host: str = "127.0.0.1", port: int = 7497, client_id: int = None, timeout: int = 5) -> bool:
     """
     Light-weight connectivity test that does NOT affect the trading connection
     
@@ -40,6 +40,11 @@ def test_ibkr_credentials(host: str = "127.0.0.1", port: int = 7497, client_id: 
     if not IB_INSYNC_AVAILABLE:
         logger.error("ib_insync not installed. Install with: pip install stratequeue[ibkr]")
         return False
+    
+    # Generate unique client ID if not provided
+    if client_id is None:
+        import random
+        client_id = random.randint(5000, 9999)
     
     # Use a separate IB instance for testing
     test_ib = IB()
@@ -89,7 +94,7 @@ def test_ibkr_credentials(host: str = "127.0.0.1", port: int = 7497, client_id: 
             logger.warning(f"Error cleaning up IBKR test connection: {e}")
 
 
-def get_ibkr_connection_info(host: str = "127.0.0.1", port: int = 7497, client_id: int = 1) -> dict:
+def get_ibkr_connection_info(host: str = "127.0.0.1", port: int = 7497, client_id: int = None) -> dict:
     """
     Get connection information without establishing a persistent connection
     
@@ -103,6 +108,11 @@ def get_ibkr_connection_info(host: str = "127.0.0.1", port: int = 7497, client_i
     """
     if not IB_INSYNC_AVAILABLE:
         return {"error": "ib_insync not installed"}
+    
+    # Generate unique client ID if not provided
+    if client_id is None:
+        import random
+        client_id = random.randint(6000, 9999)
     
     test_ib = IB()
     

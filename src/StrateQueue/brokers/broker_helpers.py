@@ -36,6 +36,11 @@ def detect_broker_from_environment() -> str | None:
     if (paper_key and paper_secret) or (live_key and live_secret):
         return 'alpaca'
 
+    # Check for IB Gateway credentials (preferred if gateway mode is specified)
+    if os.getenv('IB_GATEWAY_MODE', '').lower() == 'true':
+        if os.getenv('IB_TWS_PORT') or os.getenv('IB_CLIENT_ID') or os.getenv('IB_TWS_HOST'):
+            return 'ib_gateway'
+    
     # Check for Interactive Brokers credentials
     if os.getenv('IB_TWS_PORT') or os.getenv('IB_CLIENT_ID') or os.getenv('IB_TWS_HOST'):
         return 'ibkr'
@@ -73,6 +78,11 @@ def detect_all_brokers_from_environment() -> list[str]:
     if (paper_key and paper_secret) or (live_key and live_secret):
         detected_brokers.append('alpaca')
 
+    # Check for IB Gateway (preferred if gateway mode is specified)
+    if os.getenv('IB_GATEWAY_MODE', '').lower() == 'true':
+        if os.getenv('IB_TWS_PORT') or os.getenv('IB_CLIENT_ID') or os.getenv('IB_TWS_HOST'):
+            detected_brokers.append('ib_gateway')
+    
     # Check for Interactive Brokers
     if os.getenv('IB_TWS_PORT') or os.getenv('IB_CLIENT_ID') or os.getenv('IB_TWS_HOST'):
         detected_brokers.append('ibkr')
@@ -205,11 +215,12 @@ def validate_broker_environment(broker_type: str) -> tuple[bool, str]:
             return False, "Missing required Alpaca environment variables: ALPACA_API_KEY/PAPER_KEY and ALPACA_SECRET_KEY/PAPER_SECRET"
         return True, "Alpaca environment variables validated"
 
-    elif broker_type in ['ibkr', 'IBKR', 'interactive-brokers', 'interactive_brokers']:
+    elif broker_type in ['ibkr', 'IBKR', 'interactive-brokers', 'interactive_brokers', 'ib_gateway', 'ibkr_gateway', 'ib-gateway', 'gateway']:
         config = get_interactive_brokers_config_from_env()
         if not config.get('port'):
             return False, "Missing required Interactive Brokers environment variable: IB_TWS_PORT"
-        return True, "Interactive Brokers environment variables validated"
+        broker_name = "IB Gateway" if 'gateway' in broker_type.lower() else "Interactive Brokers"
+        return True, f"{broker_name} environment variables validated"
 
     elif broker_type == 'td_ameritrade':
         config = get_td_ameritrade_config_from_env()
@@ -236,7 +247,7 @@ def get_broker_config_from_env(broker_type: str) -> dict[str, Any]:
     """
     if broker_type == 'alpaca':
         return get_alpaca_config_from_env()
-    elif broker_type in ['ibkr', 'IBKR', 'interactive-brokers', 'interactive_brokers']:
+    elif broker_type in ['ibkr', 'IBKR', 'interactive-brokers', 'interactive_brokers', 'ib_gateway', 'ibkr_gateway', 'ib-gateway', 'gateway']:
         return get_interactive_brokers_config_from_env()
     elif broker_type == 'td_ameritrade':
         return get_td_ameritrade_config_from_env()
@@ -264,8 +275,8 @@ def normalize_symbol_for_broker(symbol: str, broker_type: str) -> str:
         # Add more crypto mappings as needed
         return symbol.upper()
 
-    elif broker_type in ['ibkr', 'IBKR', 'interactive-brokers', 'interactive_brokers']:
-        # IB specific normalization
+    elif broker_type in ['ibkr', 'IBKR', 'interactive-brokers', 'interactive_brokers', 'ib_gateway', 'ibkr_gateway', 'ib-gateway', 'gateway']:
+        # IB/IB Gateway specific normalization
         return symbol.upper()
 
     elif broker_type == 'td_ameritrade':
