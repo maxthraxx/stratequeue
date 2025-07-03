@@ -120,7 +120,7 @@ stratequeue webui
 | **Data providers**          |               |
 | ├age yfinance               | ✅ implemented |
 | Cle Cle Polygon.io          | ✅ implemented |
-| ├cam coinmarketcap          | ✅ Implemented |
+| ├cam coinmarketcap          | ✅ implemented |
 | ├age alpaca                 | ✅ implemented |
 | └─ Interactive sectoribus   | ❌ venire cito |
 
