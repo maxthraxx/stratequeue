@@ -127,7 +127,7 @@ stratequeue webui
 | ├─ Polygon.io | ✅ Implemented |
 | ├─ CoinMarketCap | ✅ Implemented |
 | ├─ Alpaca | ✅ Implemented |
-| └─ Interactive Brokers | ❌ Coming Soon |
+| └─ Interactive Brokers | 🟠 Implemented (not tested) |
 
 ## ✨ Why StrateQueue?
 
