@@ -108,7 +108,7 @@ stratequeue webui
 
 ## 🔧 fulcitur integrations
 
-| Integration                 | Status                         |
+| Integratio                  | Status                         |
 | --------------------------- | ------------------------------ |
 | **Backtesting engines**     |                                |
 | Cie ├ backtesting.py        | ✅ implemented                  |
@@ -147,7 +147,7 @@ stratequeue webui
 
 ## ⚠️ Disclaimer - Non investment consilium
 
-StrateQueue is an open-source toolkit provided **"Sicut, est" pro educational et informational proposita tantum**.
+Stratequeue est aperta-fonte Toolkit provisum**"Sicut, est" pro educational et informational proposita tantum**.
 
 -   Facit**non**constituere investment consilium, brokerage officia, aut commendaticiis emere aut vendere aliqua financial instrumentum.
 -   Omnes negotiationem involves substantial periculo**Praeterita perficientur non indicativo futuris results**. Vos may perdere aliquas et omnia tua capitis.
