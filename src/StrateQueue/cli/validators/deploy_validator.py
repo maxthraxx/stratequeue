@@ -112,8 +112,11 @@ class DeployValidator(BaseValidator):
         granularities = parse_comma_separated(args.granularity) if args.granularity else []
         brokers = parse_comma_separated(args.broker) if args.broker else []
 
-        # Auto-detect data source based on broker if using default 'demo'
-        if data_sources == ['demo'] and args.data_source == 'demo':
+        # Auto-detect data source based on broker if using default 'demo' (not explicitly specified)
+        # Check if --data-source was explicitly provided by the user
+        import sys
+        data_source_explicitly_set = '--data-source' in sys.argv
+        if data_sources == ['demo'] and not data_source_explicitly_set:
             # Check if broker is specified or can be auto-detected
             detected_broker = None
             
