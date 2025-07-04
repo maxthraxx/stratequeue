@@ -105,6 +105,8 @@ ibkr = [
 dev = [
     "pytest>=7.4.0",
     "pytest-asyncio>=0.21.0",
+    "pytest-dependency>=0.5.1",
+    "pexpect>=4.8.0",
     "black>=23.0.0",
     "flake8>=6.0.0",
     "mypy>=1.5.0",
@@ -214,13 +216,25 @@ strict_equality = true
 # Pytest configuration
 [tool.pytest.ini_options]
 minversion = "7.0"
-addopts = "-ra -q --strict-markers --strict-config"
+addopts = "-v --tb=short --ignore=examples/ --ignore-glob=examples/*"
 testpaths = ["tests"]
 python_files = ["test_*.py", "*_test.py"]
 python_classes = ["Test*"]
 python_functions = ["test_*"]
+asyncio_mode = "auto"
+asyncio_default_fixture_loop_scope = "function"
+norecursedirs = ["examples"]
+filterwarnings = [
+    "ignore::DeprecationWarning",
+    "ignore::PendingDeprecationWarning",
+    "ignore::pytest.PytestDeprecationWarning"
+]
 markers = [
     "slow: marks tests as slow (deselect with '-m \"not slow\"')",
     "integration: marks tests as integration tests",
     "unit: marks tests as unit tests",
+    "live_alpaca: marks tests that connect to live Alpaca API",
+    "live_ibkr: marks tests that connect to live IBKR API",
+    "network: marks tests that require network access",
+    "dependency: marks tests with dependencies on other tests"
 ] 
