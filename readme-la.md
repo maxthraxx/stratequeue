@@ -100,7 +100,7 @@ pip install "stratequeue[all]"
 
 ![Setup](examples/vhs/setup.gif)
 
-### Dashboard (experimentalem)
+### Dashboard (Experimental)
 
 ```bash
 stratequeue webui
