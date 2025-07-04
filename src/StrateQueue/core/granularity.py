@@ -145,6 +145,20 @@ class GranularityParser:
             else:
                 return False  # Seconds not supported
 
+        elif data_source == "ibkr":
+            # Interactive Brokers supports extensive granularities through IB Gateway
+            # Supports seconds, minutes, hours, days, weeks, and months
+            if granularity.unit == TimeUnit.SECOND:
+                return granularity.multiplier in [1, 5, 10, 15, 30]  # Common second intervals
+            elif granularity.unit == TimeUnit.MINUTE:
+                return granularity.multiplier in [1, 2, 3, 5, 10, 15, 20, 30]  # Common minute intervals
+            elif granularity.unit == TimeUnit.HOUR:
+                return granularity.multiplier in [1, 2, 3, 4, 8]  # Common hour intervals
+            elif granularity.unit == TimeUnit.DAY:
+                return granularity.multiplier >= 1  # Any day interval >= 1
+            else:
+                return False
+
         else:
             return False
 
@@ -161,6 +175,8 @@ class GranularityParser:
             return ["1m", "2m", "5m", "15m", "30m", "60m", "90m", "1h", "1d", "5d", "1wk", "1mo", "3mo"]
         elif data_source == "alpaca":
             return ["1m", "2m", "5m", "10m", "15m", "30m", "1h", "2h", "4h", "6h", "12h", "1d", "1w"]
+        elif data_source == "ibkr":
+            return ["1s", "5s", "10s", "15s", "30s", "1m", "2m", "3m", "5m", "10m", "15m", "20m", "30m", "1h", "2h", "3h", "4h", "8h", "1d", "1w", "1mo"]
         else:
             return []
 

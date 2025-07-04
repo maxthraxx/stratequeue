@@ -56,8 +56,10 @@ class _StubAlpacaBroker:  # noqa: D101 – test stub
 
 
 class _StubIBKRBroker:  # noqa: D101 – test stub
-    def __init__(self, config) -> None:  # real class only takes config
+    def __init__(self, config, portfolio_manager=None, position_sizer=None) -> None:  # Updated for new signature
         self.config = config
+        self.portfolio_manager = portfolio_manager
+        self.position_sizer = position_sizer
 
     @staticmethod
     def get_broker_info():  # noqa: D401

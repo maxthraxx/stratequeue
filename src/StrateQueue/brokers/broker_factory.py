@@ -41,6 +41,10 @@ class BrokerFactory:
             'interactive-brokers': 'ibkr',
             'interactive_brokers': 'ibkr',
             'alpaca': 'alpaca',
+            'ib_gateway': 'ib_gateway',
+            'ibkr_gateway': 'ib_gateway',
+            'ib-gateway': 'ib_gateway',
+            'gateway': 'ib_gateway',
         }
         
         return alias_map.get(broker_type, broker_type)
@@ -69,6 +73,18 @@ class BrokerFactory:
             logger.debug("Registered Interactive Brokers broker with aliases: ibkr, IBKR, interactive-brokers, interactive_brokers")
         except ImportError as e:
             logger.warning(f"Could not load Interactive Brokers broker: {e}")
+            # Note: This will happen if ib_insync is not installed
+
+        # Register IB Gateway broker with streaming capabilities
+        try:
+            from .IBKR.ib_gateway_broker import IBGatewayBroker
+            cls._brokers['ib_gateway'] = IBGatewayBroker
+            cls._brokers['ibkr_gateway'] = IBGatewayBroker
+            cls._brokers['ib-gateway'] = IBGatewayBroker
+            cls._brokers['gateway'] = IBGatewayBroker
+            logger.debug("Registered IB Gateway broker with streaming capabilities")
+        except ImportError as e:
+            logger.warning(f"Could not load IB Gateway broker: {e}")
             # Note: This will happen if ib_insync is not installed
 
         try:
@@ -137,8 +153,8 @@ class BrokerFactory:
                 logger.error(f"Failed to get Alpaca credentials for {'paper' if config.paper_trading else 'live'} trading: {e}")
                 raise ValueError(f"Failed to configure Alpaca for {'paper' if config.paper_trading else 'live'} trading: {e}")
 
-        # For IBKR, get credentials from environment if not provided
-        if normalized_broker_type == 'ibkr' and not config.credentials:
+        # For IBKR and IB Gateway, get credentials from environment if not provided
+        if normalized_broker_type in ['ibkr', 'ib_gateway'] and not config.credentials:
             try:
                 from .broker_helpers import get_interactive_brokers_config_from_env
                 ibkr_config = get_interactive_brokers_config_from_env()
@@ -151,9 +167,9 @@ class BrokerFactory:
         if normalized_broker_type == 'alpaca':
             # AlpacaBroker has statistics_manager and position_sizer parameters
             return broker_class(config, portfolio_manager, statistics_manager, position_sizer)
-        elif normalized_broker_type == 'ibkr':
-            # IBKRBroker takes config only
-            return broker_class(config)
+        elif normalized_broker_type in ['ibkr', 'ib_gateway']:
+            # IBKR brokers take config, portfolio_manager, and position_sizer
+            return broker_class(config, portfolio_manager, position_sizer)
         else:
             # Other brokers have position_sizer parameter
             return broker_class(config, portfolio_manager, position_sizer)
@@ -204,7 +220,16 @@ class BrokerFactory:
             broker_class = cls._brokers[broker_type]
             # Create minimal config for info retrieval
             temp_config = BrokerConfig(broker_type=broker_type)
-            temp_broker = broker_class(temp_config)
+            
+            # Use the same logic as create_broker for constructor arguments
+            normalized_broker_type = cls._normalize_broker_type(broker_type)
+            if normalized_broker_type == 'alpaca':
+                temp_broker = broker_class(temp_config, None, None, None)
+            elif normalized_broker_type in ['ibkr', 'ib_gateway']:
+                temp_broker = broker_class(temp_config, None, None)
+            else:
+                temp_broker = broker_class(temp_config, None, None)
+            
             return temp_broker.get_broker_info()
         except Exception as e:
             logger.error(f"Error getting broker info for {broker_type}: {e}")

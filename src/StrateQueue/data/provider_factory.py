@@ -111,6 +111,15 @@ class DataProviderFactory:
         except ImportError as e:
             logger.warning(f"Could not load Alpaca data provider: {e}")
 
+        # Register IBKR data provider
+        try:
+            from .sources.ibkr import IBKRDataIngestion
+            cls._providers['ibkr'] = IBKRDataIngestion
+            logger.debug("Registered IBKR data provider")
+        except ImportError as e:
+            logger.warning(f"Could not load IBKR data provider: {e}")
+            # Note: This will happen if ib_insync is not installed
+
         try:
             # from .sources.binance import BinanceDataIngestion
             # cls._providers['binance'] = BinanceDataIngestion
@@ -222,6 +231,11 @@ class DataProviderFactory:
             paper = bool(os.getenv("ALPACA_PAPER", "1"))  # default to paper feed
             return provider_class(api_key, secret_key, paper=paper, granularity=config.granularity)
 
+        elif provider_type == "ibkr":
+            # IBKR provider uses IB Gateway for data
+            paper_trading = bool(os.getenv("IB_PAPER", "true").lower() == "true")
+            return provider_class(granularity=config.granularity, paper_trading=paper_trading)
+
         else:
             # Generic provider creation for future providers
             return provider_class(config)
@@ -261,6 +275,13 @@ class DataProviderFactory:
                 config['api_key'] = api_key
                 config['secret_key'] = secret_key
                 config['paper_trading'] = bool(os.getenv('ALPACA_PAPER', '1'))
+
+        elif provider_type == "ibkr":
+            # IBKR uses IB Gateway environment variables
+            config['host'] = os.getenv('IB_TWS_HOST', 'localhost')
+            config['port'] = int(os.getenv('IB_TWS_PORT', '4002'))
+            config['client_id'] = int(os.getenv('IB_CLIENT_ID', '1'))
+            config['paper_trading'] = bool(os.getenv('IB_PAPER', 'true').lower() == 'true')
 
         # Common granularity setting
         granularity = os.getenv('DATA_GRANULARITY', "1m")
@@ -405,6 +426,28 @@ class DataProviderFactory:
                 supported_granularities=["1m", "5m", "15m", "1h", "1d"]
             )
 
+        elif provider_type == "ibkr":
+            return DataProviderInfo(
+                name="Interactive Brokers",
+                version="1.0",
+                supported_features={
+                    "historical_data": True,
+                    "real_time_data": True,
+                    "multiple_granularities": True,
+                    "stocks": True,
+                    "crypto": True,
+                    "options": True,
+                    "futures": True,
+                    "forex": True,
+                    "streaming": True,
+                    "level2_data": True
+                },
+                description="Professional market data via Interactive Brokers IB Gateway",
+                supported_markets=["stocks", "crypto", "options", "futures", "forex"],
+                requires_api_key=False,  # Uses TWS/Gateway connection instead
+                supported_granularities=["1s", "5s", "10s", "15s", "30s", "1m", "2m", "3m", "5m", "10m", "15m", "20m", "30m", "1h", "2h", "3h", "4h", "8h", "1d", "1w", "1mo"]
+            )
+
         else:
             raise ValueError(f"Unknown provider type: {provider_type}")
 
@@ -442,6 +485,11 @@ def detect_provider_type() -> str:
         if alpaca_key and alpaca_secret:
             logger.info("Detected Alpaca credentials, suggesting alpaca provider")
             return 'alpaca'
+
+        # Check for IBKR/IB Gateway credentials
+        if os.getenv('IB_TWS_PORT') or os.getenv('IB_CLIENT_ID') or os.getenv('IB_TWS_HOST'):
+            logger.info("Detected IB Gateway credentials, suggesting ibkr provider")
+            return 'ibkr'
 
         # Check for explicit provider setting
         explicit_provider = os.getenv('DATA_PROVIDER')

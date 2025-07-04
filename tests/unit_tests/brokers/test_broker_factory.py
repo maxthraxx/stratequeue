@@ -71,8 +71,11 @@ def _make_stub(module_name: str, cls_name: str):
     mod = types.ModuleType(module_name)
 
     class _StubBroker:  # noqa: D401 – stub
-        def __init__(self, config, *args, **kwargs):
+        def __init__(self, config, portfolio_manager=None, position_sizer=None, statistics_manager=None):
             self.config = config
+            self.portfolio_manager = portfolio_manager
+            self.position_sizer = position_sizer
+            self.statistics_manager = statistics_manager
 
         def get_broker_info(self):  # minimal implementation
             from StrateQueue.brokers.broker_base import BrokerInfo
