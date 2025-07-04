@@ -8,7 +8,7 @@
 
 > **Et celerrime iter a backtest ad vivere negotiatione**[![Stargazers repo roster for @StrateQueue/StrateQueue](https://reporoster.com/stars/StrateQueue/StrateQueue)](https://github.com/StrateQueue/StrateQueue/stargazers)
 
-> ⭐️ If StrateQueue saved you time or taught you something, consider [Surning nos in Github](https://github.com/StrateQueue/StrateQueue)- Is iuvat magis quinks invenire in project!
+> ⭐️ Si stratequeue salvus erit vobis et docuit vos aliquid, consideramus[Surning nos in Github](https://github.com/StrateQueue/StrateQueue)- Is iuvat magis quinks invenire in project!
 
 <!---
 ## 🌍 README Translations
