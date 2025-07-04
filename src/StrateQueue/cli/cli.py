@@ -86,7 +86,14 @@ def register_command_parsers(subparsers) -> None:
         command = create_command(command_name)
         if command:
             # Create subparser for this command with aliases
-            aliases = command.aliases if hasattr(command, 'aliases') else []
+            aliases = []
+            if hasattr(command, 'aliases'):
+                aliases_attr = command.aliases
+                # Ensure aliases is a list
+                if isinstance(aliases_attr, list):
+                    aliases = aliases_attr
+                elif aliases_attr is not None:
+                    aliases = [aliases_attr] if isinstance(aliases_attr, str) else []
 
             # Get enhanced help content
             enhanced_help = get_command_help(command_name)
