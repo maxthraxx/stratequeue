@@ -73,8 +73,14 @@ def run_cli(*args, stdin: str = "", env: Optional[Dict[str, str]] = None,
         pytest.fail(f"Failed to run command {' '.join(cmd)}: {e}")
 
 
+# Automatically inject offline/test environment variables so that the spawned
+# subprocess uses the same lightweight stub environment as the current test
+# process.  This guarantees that the CLI output (which runs in a fresh Python
+# interpreter) matches the expectations computed inside the test process
+# (e.g. InfoFormatter outputs built from the in-process Broker stubs).
+
 @pytest.fixture
-def cli_runner(tmp_working_dir):
+def cli_runner(tmp_working_dir, mock_offline_env):
     """
     Provide a CLI runner fixture that runs commands in a temporary directory.
     
@@ -82,10 +88,21 @@ def cli_runner(tmp_working_dir):
         exit_code, stdout, stderr = cli_runner("--help")
     """
     def _run_cli(*args, **kwargs):
-        # Default to using the temporary working directory
-        if 'cwd' not in kwargs:
-            kwargs['cwd'] = tmp_working_dir
-        return run_cli(*args, **kwargs)
+        # Ensure the spawned process runs inside the temporary working dir by default
+        kwargs.setdefault('cwd', tmp_working_dir)
+
+        # Merge/append environment variables so the child process inherits the
+        # *offline* settings (no real network/Broker SDK imports) unless the
+        # caller explicitly overrides them.
+        extra_env = kwargs.pop('env', {}) or {}
+        # Child-env gets the offline defaults first, then any explicit overrides
+        merged_env = {
+            **mock_offline_env,  # SQ_OFFLINE / SQ_LIGHT_IMPORTS, etc.
+            **extra_env,
+            "SQ_TEST_STUB_BROKERS": "1",
+        }
+
+        return run_cli(*args, env=merged_env, **kwargs)
     
     return _run_cli
 
