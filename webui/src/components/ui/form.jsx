@@ -1,6 +1,6 @@
 import React from 'react';
 import { FormProvider, useFormContext, Controller } from 'react-hook-form';
-import { cn } from '../../lib/utils';
+import { cn } from '../../lib/utils.js';
 
 export function Form({ children, ...props }) {
   return <form {...props}>{children}</form>;

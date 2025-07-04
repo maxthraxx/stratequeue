@@ -86,6 +86,50 @@ def health():
     return {"status": "ok"}
 
 
+@app.get("/engines")
+def get_engines():
+    """Get information about available and unavailable engines."""
+    try:
+        from StrateQueue.engines.engine_factory import (
+            get_supported_engines, 
+            get_unavailable_engines,
+            get_all_known_engines
+        )
+        
+        supported = get_supported_engines()
+        unavailable = get_unavailable_engines()
+        all_known = get_all_known_engines()
+        
+        # Build response with engine availability information
+        engines = []
+        for engine_name in all_known:
+            if engine_name in supported:
+                engines.append({
+                    "name": engine_name,
+                    "available": True,
+                    "reason": None
+                })
+            else:
+                engines.append({
+                    "name": engine_name,
+                    "available": False,
+                    "reason": unavailable.get(engine_name, "Unknown reason")
+                })
+        
+        return {
+            "engines": engines,
+            "supported_count": len(supported),
+            "total_count": len(all_known)
+        }
+    except Exception as e:
+        return {
+            "engines": [],
+            "supported_count": 0,
+            "total_count": 0,
+            "error": str(e)
+        }
+
+
 @app.get("/config")
 def get_config():
     """Get current configuration from credentials file."""
