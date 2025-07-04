@@ -4,7 +4,7 @@
 
 <!---[![codecov](https://codecov.io/gh/stratequeue/stratequeue/branch/main/graph/badge.svg)](https://codecov.io/gh/stratequeue/stratequeue)-->
 
-📖 **[Documenta](https://stratequeue.com/docs)**Squama 🚀**[Velox Start Guide](https://www.stratequeue.com/docs/quick-start)**Squama 💬**[Conmunitas](https://discord.gg/H4hWAXJYqX)**
+📖**[Documenta](https://stratequeue.com/docs)**Squama 🚀**[Velox Start Guide](https://www.stratequeue.com/docs/quick-start)**Squama 💬**[Conmunitas](https://discord.gg/H4hWAXJYqX)**
 
 > **Et celerrime iter a backtest ad vivere negotiatione**[![Stargazers repo roster for @StrateQueue/StrateQueue](https://reporoster.com/stars/StrateQueue/StrateQueue)](https://github.com/StrateQueue/StrateQueue/stargazers)
 
@@ -106,9 +106,9 @@ pip install "stratequeue[all]"
 stratequeue webui
 ```
 
-## 🔧 Supported Integrations
+## 🔧 fulcitur integrations
 
-| Integration                 | Status                         |
+| Integratio                  | Status                         |
 | --------------------------- | ------------------------------ |
 | **Backtesting engines**     |                                |
 | Cie ├ backtesting.py        | ✅ implemented                  |
@@ -119,7 +119,7 @@ stratequeue webui
 | ├age alpaca                 | ✅ implemented                  |
 | ├cam interactive sectoribus | ✅ implemented                  |
 | ├age kraken                 | ❌ venire cito                  |
-| └─ Binance                  | ❌ venire cito                  |
+| └─ binance                  | ❌ venire cito                  |
 | **Data providers**          |                                |
 | ├age yfinance               | ✅ implemented                  |
 | Cle Cle Polygon.io          | ✅ implemented                  |
@@ -145,7 +145,7 @@ stratequeue webui
 
 [![Star History Chart](https://api.star-history.com/svg?repos=stratequeue/stratequeue&type=Timeline?refresh=1)](https://www.star-history.com/#stratequeue/stratequeue&Timeline)
 
-## ⚠️ Disclaimer – No Investment Advice
+## ⚠️ Disclaimer - Non investment consilium
 
 Stratequeue est aperta-fonte Toolkit provisum**"Sicut, est" pro educational et informational proposita tantum**.
 
