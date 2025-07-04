@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -52,14 +52,6 @@ const brokerOptions = [
   { value: 'alpaca', label: 'Alpaca' },
 ];
 
-const engineOptions = [
-  { value: 'auto', label: 'Auto (detect from strategy)' },
-  { value: 'backtesting', label: 'Backtesting.py' },
-  { value: 'vectorbt', label: 'VectorBT' },
-  { value: 'zipline', label: 'Zipline' },
-  { value: 'backtrader', label: 'Backtrader' },
-];
-
 export default function DeployForm() {
   const methods = useForm({
     resolver: zodResolver(schema),
@@ -76,6 +68,54 @@ export default function DeployForm() {
   });
 
   const [uploading, setUploading] = useState(false);
+  const [engines, setEngines] = useState([]);
+  const [enginesLoading, setEnginesLoading] = useState(true);
+
+  // Fetch available engines on component mount
+  useEffect(() => {
+    const fetchEngines = async () => {
+      try {
+        const response = await fetch('http://localhost:8400/engines');
+        const data = await response.json();
+        
+        // Always include 'auto' option first
+        const engineOptions = [
+          { value: 'auto', label: 'Auto (detect from strategy)', available: true, reason: null }
+        ];
+        
+        // Add engines from API response
+        if (data.engines) {
+          data.engines.forEach(engine => {
+            const displayName = {
+              'backtesting': 'Backtesting.py',
+              'vectorbt': 'VectorBT',
+              'zipline': 'Zipline',
+              'backtrader': 'Backtrader'
+            }[engine.name] || engine.name.charAt(0).toUpperCase() + engine.name.slice(1);
+            
+            engineOptions.push({
+              value: engine.name,
+              label: displayName,
+              available: engine.available,
+              reason: engine.reason
+            });
+          });
+        }
+        
+        setEngines(engineOptions);
+      } catch (error) {
+        console.error('Failed to fetch engines:', error);
+        // Fallback to basic options if API call fails
+        setEngines([
+          { value: 'auto', label: 'Auto (detect from strategy)', available: true, reason: null }
+        ]);
+      } finally {
+        setEnginesLoading(false);
+      }
+    };
+
+    fetchEngines();
+  }, []);
 
   const onSubmit = async (values) => {
     try {
@@ -84,6 +124,16 @@ export default function DeployForm() {
         alert('Please select a strategy file');
         return;
       }
+      
+      // Check if selected engine is available
+      if (values.engine && values.engine !== 'auto') {
+        const selectedEngine = engines.find(e => e.value === values.engine);
+        if (selectedEngine && !selectedEngine.available) {
+          alert(`❌ Selected engine "${selectedEngine.label}" is not available.\n\n${selectedEngine.reason}\n\nPlease select a different engine or use "Auto" detection.`);
+          return;
+        }
+      }
+      
       setUploading(true);
       const fileData = new FormData();
       fileData.append('file', values.strategyFile[0]);
@@ -270,15 +320,43 @@ export default function DeployForm() {
             <FormControl>
               <Select onValueChange={field.onChange} value={field.value || ''}>
                 <SelectTrigger>
-                  <SelectValue placeholder="Auto-detect" />
+                  <SelectValue placeholder={enginesLoading ? "Loading engines..." : "Auto-detect"} />
                 </SelectTrigger>
                 <SelectContent>
-                  {engineOptions.map((opt) => (
-                    <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
-                  ))}
+                  {enginesLoading ? (
+                    <SelectItem value="loading" disabled>Loading engines...</SelectItem>
+                  ) : (
+                    engines.map((opt) => (
+                      <SelectItem 
+                        key={opt.value} 
+                        value={opt.value}
+                        disabled={!opt.available}
+                        className={!opt.available ? 'text-gray-400 cursor-not-allowed' : ''}
+                        title={!opt.available ? opt.reason : ''}
+                      >
+                        <div className="flex items-center justify-between w-full">
+                          <span className={!opt.available ? 'text-gray-400' : ''}>
+                            {opt.label}
+                          </span>
+                          {!opt.available && (
+                            <span className="text-xs text-gray-400 ml-2">
+                              (Unavailable)
+                            </span>
+                          )}
+                        </div>
+                      </SelectItem>
+                    ))
+                  )}
                 </SelectContent>
               </Select>
             </FormControl>
+            {!enginesLoading && engines.some(e => !e.available) && (
+              <FormDescription>
+                <span className="text-xs text-gray-500">
+                  Greyed out engines are not available. Hover for details.
+                </span>
+              </FormDescription>
+            )}
           </FormItem>
         )}
       />
