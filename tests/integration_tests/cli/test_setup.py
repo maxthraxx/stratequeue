@@ -7,11 +7,82 @@ Tests for the setup command --docs functionality and interactive setup.
 import subprocess
 import pytest
 import os
+import sys
 import tempfile
 import shutil
 from pathlib import Path
 import pexpect
 import time
+
+# Version-agnostic Python executable
+PYTHON_EXEC = sys.executable
+
+def create_minimal_test_env(home_dir: str = None) -> dict:
+    """
+    Create a minimal environment for subprocess calls to avoid 'Argument list too long' error.
+    
+    Args:
+        home_dir: Optional home directory to set (for test isolation)
+    
+    Returns:
+        Dictionary with minimal environment variables
+    """
+    minimal_env = {
+        # Essential system variables
+        'PATH': '/opt/homebrew/bin:/Library/Frameworks/Python.framework/Versions/3.10/bin:/usr/bin:/bin:/usr/sbin:/sbin',
+        'SHELL': '/bin/bash',
+        'USER': os.environ.get('USER', 'testuser'),
+        'LANG': 'en_US.UTF-8',
+        'LC_ALL': 'en_US.UTF-8',
+        
+        # Python-specific variables
+        'PYTHONPATH': os.environ.get('PYTHONPATH', ''),
+        'PYTHONIOENCODING': 'utf-8',
+        
+        # StrateQueue test variables
+        'SQ_TEST_STUB_BROKERS': '1',
+        'SQ_OFFLINE': '1',
+        'SQ_LIGHT_IMPORTS': '1',
+        
+        # Clear any existing broker/trading environment variables
+        'PAPER_KEY': '',
+        'PAPER_SECRET': '',
+        'ALPACA_API_KEY': '',
+        'ALPACA_SECRET_KEY': '',
+        'IB_TWS_PORT': '',
+        'IB_CLIENT_ID': '',
+        'IB_TWS_HOST': '',
+        'POLYGON_API_KEY': '',
+        'CMC_API_KEY': '',
+        'IBKR_PORT': '4000',  # For test skipping
+    }
+    
+    # Set HOME directory if specified
+    if home_dir:
+        minimal_env['HOME'] = str(home_dir)
+    else:
+        minimal_env['HOME'] = os.environ.get('HOME', '/tmp')
+    
+    return minimal_env
+
+# Helper to ensure directories exist with proper permissions
+def ensure_directory_with_permissions(dir_path):
+    """
+    Create a directory and ensure it has the right permissions
+    """
+    Path(dir_path).mkdir(parents=True, exist_ok=True)
+    # On non-Windows systems, make sure permissions are appropriate for a credential store
+    if os.name != 'nt':
+        os.chmod(dir_path, 0o700)  # Only the user can read/write/execute
+    
+    # Debug info in case of failures
+    print(f"Created directory {dir_path}")
+    if os.path.exists(dir_path):
+        print(f"Directory exists, permissions: {oct(os.stat(dir_path).st_mode & 0o777)}")
+    else:
+        print(f"ERROR: Directory does not exist after creation attempt")
+    
+    return dir_path
 
 
 class TestSetupCommandDocs:
@@ -160,16 +231,18 @@ class TestSetupCommandInteractive:
 
     def test_interactive_broker_setup_alpaca_paper_trading(self, tmp_working_dir):
         """E-1: Interactive setup for Alpaca broker with paper trading credentials"""
-        # Create a temporary directory for credentials
-        creds_dir = tmp_working_dir / ".stratequeue"
-        creds_dir.mkdir(exist_ok=True)
+        # Create a temporary directory for credentials with proper permissions
+        creds_dir = ensure_directory_with_permissions(tmp_working_dir / ".stratequeue")
         
         # Set up environment to use temporary directory
-        env = os.environ.copy()
-        env['HOME'] = str(tmp_working_dir)
+        env = create_minimal_test_env(home_dir=str(tmp_working_dir))
+        
+        # Print debug info about the environment
+        print(f"Running test with HOME={env['HOME']}")
+        print(f"Credentials directory: {creds_dir}")
         
         # Spawn the interactive setup command
-        cmd = f"cd {tmp_working_dir} && python3.10 {os.getcwd()}/main.py setup"
+        cmd = f"cd {tmp_working_dir} && {PYTHON_EXEC} {os.getcwd()}/main.py setup"
         child = pexpect.spawn('/bin/bash', ['-c', cmd], env=env, timeout=30, encoding='utf-8')
         
         try:
@@ -219,6 +292,13 @@ class TestSetupCommandInteractive:
             creds_file = creds_dir / "credentials.env"
             assert creds_file.exists(), "Credentials file was not created"
             
+            # Print debug info about the file
+            print(f"Credentials file: {creds_file}")
+            print(f"File exists: {creds_file.exists()}")
+            if creds_file.exists():
+                print(f"File size: {creds_file.stat().st_size} bytes")
+                print(f"File permissions: {oct(creds_file.stat().st_mode)}")
+            
             # Verify credentials content
             content = creds_file.read_text()
             assert f"PAPER_KEY={test_api_key}" in content
@@ -245,11 +325,10 @@ class TestSetupCommandInteractive:
         creds_dir.mkdir(exist_ok=True)
         
         # Set up environment to use temporary directory
-        env = os.environ.copy()
-        env['HOME'] = str(tmp_working_dir)
+        env = create_minimal_test_env(home_dir=str(tmp_working_dir))
         
         # Spawn the interactive setup command
-        cmd = f"cd {tmp_working_dir} && python3.10 {os.getcwd()}/main.py setup"
+        cmd = f"cd {tmp_working_dir} && {PYTHON_EXEC} {os.getcwd()}/main.py setup"
         child = pexpect.spawn('/bin/bash', ['-c', cmd], env=env, timeout=30, encoding='utf-8')
         
         try:
@@ -328,11 +407,10 @@ class TestSetupCommandInteractive:
     def test_interactive_setup_cancellation(self, tmp_working_dir):
         """E-1c: Test cancellation of interactive setup"""
         # Set up environment to use temporary directory
-        env = os.environ.copy()
-        env['HOME'] = str(tmp_working_dir)
+        env = create_minimal_test_env(home_dir=str(tmp_working_dir))
         
         # Spawn the interactive setup command
-        cmd = f"cd {tmp_working_dir} && python3.10 {os.getcwd()}/main.py setup"
+        cmd = f"cd {tmp_working_dir} && {PYTHON_EXEC} {os.getcwd()}/main.py setup"
         child = pexpect.spawn('/bin/bash', ['-c', cmd], env=env, timeout=30, encoding='utf-8')
         
         try:
@@ -369,11 +447,10 @@ class TestSetupCommandInteractive:
         creds_dir.mkdir(exist_ok=True)
         
         # Set up environment to use temporary directory
-        env = os.environ.copy()
-        env['HOME'] = str(tmp_working_dir)
+        env = create_minimal_test_env(home_dir=str(tmp_working_dir))
         
         # Spawn the interactive setup command
-        cmd = f"cd {tmp_working_dir} && python3.10 {os.getcwd()}/main.py setup"
+        cmd = f"cd {tmp_working_dir} && {PYTHON_EXEC} {os.getcwd()}/main.py setup"
         child = pexpect.spawn('/bin/bash', ['-c', cmd], env=env, timeout=30, encoding='utf-8')
         
         try:
@@ -440,12 +517,11 @@ class TestSetupCommandCrossWorkflow:
         creds_dir.mkdir(exist_ok=True)
         
         # Set up environment to use temporary directory
-        env = os.environ.copy()
-        env['HOME'] = str(tmp_working_dir)
+        env = create_minimal_test_env(home_dir=str(tmp_working_dir))
         
         # === PHASE 1: Interactive Setup ===
         # Spawn the interactive setup command
-        cmd = f"cd {tmp_working_dir} && python3.10 {os.getcwd()}/main.py setup"
+        cmd = f"cd {tmp_working_dir} && {PYTHON_EXEC} {os.getcwd()}/main.py setup"
         child = pexpect.spawn('/bin/bash', ['-c', cmd], env=env, timeout=30, encoding='utf-8')
         
         try:
@@ -517,7 +593,7 @@ class TestSetupCommandCrossWorkflow:
         # === PHASE 2: Status Command ===
         # Now test that status command detects the credentials
         # Set up environment variables from the credentials file
-        env_with_creds = env.copy()
+        env_with_creds = create_minimal_test_env(home_dir=str(tmp_working_dir))
         env_with_creds.update({
             'PAPER_KEY': test_api_key,
             'PAPER_SECRET': test_secret_key,
@@ -525,7 +601,7 @@ class TestSetupCommandCrossWorkflow:
         })
         
         # Run status command
-        status_cmd = f"cd {tmp_working_dir} && python3.10 {os.getcwd()}/main.py status broker"
+        status_cmd = f"cd {tmp_working_dir} && {PYTHON_EXEC} {os.getcwd()}/main.py status broker"
         status_result = subprocess.run(
             ['/bin/bash', '-c', status_cmd],
             env=env_with_creds,
@@ -543,7 +619,21 @@ class TestSetupCommandCrossWorkflow:
         assert "ALPACA:" in status_output or "Alpaca" in status_output, f"Alpaca broker not mentioned in status: {status_output}"
         
         # Should not show red X marks for Alpaca
-        assert "❌ Not detected" not in status_output or "ALPACA:" not in status_output.split("❌ Not detected")[0], f"Unexpected red X for Alpaca: {status_output}"
+        # Check if the Alpaca section specifically has a red X
+        alpaca_section = ""
+        lines = status_output.split('\n')
+        in_alpaca_section = False
+        for line in lines:
+            if "ALPACA:" in line:
+                in_alpaca_section = True
+                alpaca_section = line + '\n'
+            elif in_alpaca_section:
+                if line.strip() and not line.startswith('  '):
+                    # Start of new section
+                    break
+                alpaca_section += line + '\n'
+        
+        assert "❌ Not detected" not in alpaca_section, f"Unexpected red X for Alpaca: {alpaca_section}"
 
     def test_programmatic_env_file_then_status_persistence(self, tmp_working_dir):
         """F-1b: Programmatically write env file, then verify status detects it"""
@@ -572,8 +662,7 @@ PAPER_ENDPOINT=https://paper-api.alpaca.markets
         assert f"PAPER_SECRET={test_secret_key}" in content
         
         # Set up environment to use temporary directory and credentials
-        env = os.environ.copy()
-        env['HOME'] = str(tmp_working_dir)
+        env = create_minimal_test_env(home_dir=str(tmp_working_dir))
         env.update({
             'PAPER_KEY': test_api_key,
             'PAPER_SECRET': test_secret_key,
@@ -581,7 +670,7 @@ PAPER_ENDPOINT=https://paper-api.alpaca.markets
         })
         
         # Run status command
-        status_cmd = f"cd {tmp_working_dir} && python3.10 {os.getcwd()}/main.py status broker"
+        status_cmd = f"cd {tmp_working_dir} && {PYTHON_EXEC} {os.getcwd()}/main.py status broker"
         status_result = subprocess.run(
             ['/bin/bash', '-c', status_cmd],
             env=env,
@@ -599,7 +688,21 @@ PAPER_ENDPOINT=https://paper-api.alpaca.markets
         assert "ALPACA:" in status_output or "Alpaca" in status_output, f"Alpaca broker not mentioned in status: {status_output}"
         
         # Should not show red X marks for Alpaca
-        assert "❌ Not detected" not in status_output or "ALPACA:" not in status_output.split("❌ Not detected")[0], f"Unexpected red X for Alpaca: {status_output}"
+        # Check if the Alpaca section specifically has a red X
+        alpaca_section = ""
+        lines = status_output.split('\n')
+        in_alpaca_section = False
+        for line in lines:
+            if "ALPACA:" in line:
+                in_alpaca_section = True
+                alpaca_section = line + '\n'
+            elif in_alpaca_section:
+                if line.strip() and not line.startswith('  '):
+                    # Start of new section
+                    break
+                alpaca_section += line + '\n'
+        
+        assert "❌ Not detected" not in alpaca_section, f"Unexpected red X for Alpaca: {alpaca_section}"
 
     def test_setup_then_status_different_sessions(self, tmp_working_dir):
         """F-1c: Setup in one session, status in another (simulates CLI restart)"""
@@ -629,18 +732,16 @@ PAPER_ENDPOINT=https://paper-api.alpaca.markets
         
         # === SESSION 2: New environment, fresh status check ===
         # Simulate a completely new CLI session with fresh environment
-        fresh_env = {
-            'HOME': str(tmp_working_dir),
-            'PATH': os.environ.get('PATH', ''),
-            'PYTHONPATH': os.environ.get('PYTHONPATH', ''),
+        fresh_env = create_minimal_test_env(home_dir=str(tmp_working_dir))
+        fresh_env.update({
             # Load credentials from file (simulating what the CLI would do)
             'PAPER_KEY': test_api_key,
             'PAPER_SECRET': test_secret_key,
             'PAPER_ENDPOINT': 'https://paper-api.alpaca.markets'
-        }
+        })
         
         # Run status command in fresh session
-        status_cmd = f"cd {tmp_working_dir} && python3.10 {os.getcwd()}/main.py status broker"
+        status_cmd = f"cd {tmp_working_dir} && {PYTHON_EXEC} {os.getcwd()}/main.py status broker"
         status_result = subprocess.run(
             ['/bin/bash', '-c', status_cmd],
             env=fresh_env,
@@ -660,17 +761,12 @@ PAPER_ENDPOINT=https://paper-api.alpaca.markets
     def test_invalid_credentials_show_red_x(self, tmp_working_dir):
         """F-1d: Invalid/missing credentials should show red X marks"""
         # Set up environment with no credentials
-        env = os.environ.copy()
-        env['HOME'] = str(tmp_working_dir)
+        env = create_minimal_test_env(home_dir=str(tmp_working_dir))
         
-        # Remove any existing Alpaca environment variables
-        alpaca_vars = ['PAPER_KEY', 'PAPER_SECRET', 'PAPER_ENDPOINT', 
-                      'ALPACA_API_KEY', 'ALPACA_SECRET_KEY', 'ALPACA_BASE_URL']
-        for var in alpaca_vars:
-            env.pop(var, None)
+        # The minimal environment already has empty credentials, so no need to remove them
         
         # Run status command with no credentials
-        status_cmd = f"cd {tmp_working_dir} && python3.10 {os.getcwd()}/main.py status broker"
+        status_cmd = f"cd {tmp_working_dir} && {PYTHON_EXEC} {os.getcwd()}/main.py status broker"
         status_result = subprocess.run(
             ['/bin/bash', '-c', status_cmd],
             env=env,
@@ -687,5 +783,19 @@ PAPER_ENDPOINT=https://paper-api.alpaca.markets
         assert "❌ Not detected" in status_output, f"Expected red X for missing credentials not found: {status_output}"
         assert "ALPACA:" in status_output or "Alpaca" in status_output, f"Alpaca broker not mentioned in status: {status_output}"
         
-        # Should not show green checkmarks
-        assert "✅ Detected and configured" not in status_output or "ALPACA:" not in status_output.split("✅ Detected and configured")[0], f"Unexpected green checkmark with no credentials: {status_output}" 
+        # Should not show green checkmarks for Alpaca
+        # Check if the Alpaca section specifically has a green checkmark
+        alpaca_section = ""
+        lines = status_output.split('\n')
+        in_alpaca_section = False
+        for line in lines:
+            if "ALPACA:" in line:
+                in_alpaca_section = True
+                alpaca_section = line + '\n'
+            elif in_alpaca_section:
+                if line.strip() and not line.startswith('  '):
+                    # Start of new section
+                    break
+                alpaca_section += line + '\n'
+        
+        assert "✅ Detected and configured" not in alpaca_section, f"Unexpected green checkmark for Alpaca with no credentials: {alpaca_section}" 
