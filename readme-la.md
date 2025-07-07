@@ -115,7 +115,7 @@ stratequeue webui
 | ├─ vectorbt                 | ✅ implemented                  |
 | ├age backtrader             | ✅ implemented                  |
 | └─ Zipline-Reloaded         | ✅ implemented                  |
-| **Sectoribus**              |                                |
+| **Sectores**                |                                |
 | ├age alpaca                 | ✅ implemented                  |
 | ├cam interactive sectoribus | ✅ implemented                  |
 | ├age kraken                 | ❌ venire cito                  |
