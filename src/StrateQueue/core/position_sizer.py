@@ -7,10 +7,13 @@ Implements pluggable sizing algorithms following the strategy pattern.
 
 import logging
 from abc import ABC, abstractmethod
-from typing import Optional
+from typing import Optional, TYPE_CHECKING
 
 from .signal_extractor import TradingSignal
 from .portfolio_manager import SimplePortfolioManager
+
+if TYPE_CHECKING:
+    from ..brokers.broker_base import BrokerCapabilities
 
 logger = logging.getLogger(__name__)
 
@@ -164,6 +167,7 @@ class PositionSizer:
     Main position sizing coordinator
 
     Uses pluggable strategies to determine position sizes for trading signals.
+    Converts sizing intents (units, equity_pct, notional) to executable quantities.
     """
 
     def __init__(self, strategy: PositionSizingStrategy = None):
@@ -176,6 +180,169 @@ class PositionSizer:
         self.strategy = strategy or PercentOfCapitalSizing()
         logger.info(f"Initialized position sizer with {self.strategy.__class__.__name__}")
 
+    def calculate_position_size(
+        self,
+        signal: TradingSignal,
+        symbol: str,
+        price: float,
+        broker_capabilities: "BrokerCapabilities",
+        account_value: float,
+        available_cash: float,
+        current_position: float = 0.0,
+        portfolio_manager: SimplePortfolioManager | None = None,
+        **kwargs
+    ) -> tuple[float, str]:
+        """
+        Calculate executable position size from trading signal intent
+        
+        Args:
+            signal: Trading signal with sizing intent
+            symbol: Trading symbol
+            price: Current market price
+            broker_capabilities: Broker's trading capabilities and constraints
+            account_value: Total account value
+            available_cash: Available cash for trading
+            current_position: Current position size (for position adjustments)
+            portfolio_manager: Portfolio manager instance
+            **kwargs: Additional parameters
+            
+        Returns:
+            Tuple of (executable_quantity, reasoning) where:
+            - executable_quantity: Final quantity to trade (in units)
+            - reasoning: Human-readable explanation of sizing decision
+        """
+        # Get the sizing intent from the signal
+        sizing_intent = signal.get_sizing_intent()
+        
+        if sizing_intent is None:
+            # No explicit sizing intent, use legacy strategy
+            dollar_size = self.strategy.calculate_size(
+                signal.strategy_id, symbol, signal, price, portfolio_manager, 
+                account_value=account_value, **kwargs
+            )
+            raw_quantity = dollar_size / price
+            final_quantity, reasoning = self._apply_broker_constraints(
+                raw_quantity, price, broker_capabilities, available_cash
+            )
+            return final_quantity, f"Legacy sizing: {reasoning}"
+        
+        intent_type, intent_value = sizing_intent
+        
+        if intent_type == "units":
+            # Direct unit specification
+            raw_quantity = intent_value
+            final_quantity, reasoning = self._apply_broker_constraints(
+                raw_quantity, price, broker_capabilities, available_cash
+            )
+            return final_quantity, f"Direct units ({intent_value}): {reasoning}"
+            
+        elif intent_type == "equity_pct":
+            # Percentage of equity
+            if intent_value < 0 or intent_value > 1:
+                raise ValueError(f"equity_pct must be between 0 and 1, got {intent_value}")
+            
+            dollar_size = account_value * intent_value
+            raw_quantity = dollar_size / price
+            final_quantity, reasoning = self._apply_broker_constraints(
+                raw_quantity, price, broker_capabilities, available_cash
+            )
+            return final_quantity, f"Equity {intent_value*100:.1f}% (${dollar_size:.2f}): {reasoning}"
+            
+        elif intent_type == "notional":
+            # Dollar amount
+            dollar_size = intent_value
+            raw_quantity = dollar_size / price
+            final_quantity, reasoning = self._apply_broker_constraints(
+                raw_quantity, price, broker_capabilities, available_cash
+            )
+            return final_quantity, f"Notional ${intent_value:.2f}: {reasoning}"
+            
+        else:
+            raise ValueError(f"Unknown sizing intent type: {intent_type}")
+    
+    def _apply_broker_constraints(
+        self, 
+        raw_quantity: float, 
+        price: float, 
+        capabilities: "BrokerCapabilities",
+        available_cash: float
+    ) -> tuple[float, str]:
+        """
+        Apply broker constraints to raw quantity calculation
+        
+        Args:
+            raw_quantity: Raw calculated quantity
+            price: Current market price
+            capabilities: Broker capabilities
+            available_cash: Available cash for trading
+            
+        Returns:
+            Tuple of (constrained_quantity, reasoning)
+        """
+        reasoning_parts = []
+        
+        # Check minimum notional value
+        notional_value = abs(raw_quantity) * price
+        if notional_value < capabilities.min_notional:
+            reasoning_parts.append(f"below min notional ${capabilities.min_notional}")
+            return 0.0, f"rejected - {', '.join(reasoning_parts)}"
+        
+        # Check available cash
+        required_cash = abs(raw_quantity) * price
+        if required_cash > available_cash:
+            # Reduce quantity to fit available cash
+            max_affordable_quantity = available_cash / price
+            raw_quantity = max_affordable_quantity if raw_quantity > 0 else -max_affordable_quantity
+            reasoning_parts.append(f"reduced to fit available cash ${available_cash:.2f}")
+
+        # NEW: Enforce at least 1 whole share/contract when fractional shares are not allowed
+        if not capabilities.fractional_shares and 0 < abs(raw_quantity) < 1:
+            raw_quantity = 1 if raw_quantity > 0 else -1
+            reasoning_parts.append("rounded up to minimum whole share")
+
+        # Apply lot size constraints
+        if capabilities.min_lot_size > 0:
+            # Round to nearest lot size
+            lots = round(raw_quantity / capabilities.min_lot_size)
+            constrained_quantity = lots * capabilities.min_lot_size
+            if abs(constrained_quantity - raw_quantity) > 0.001:  # Significant rounding
+                reasoning_parts.append(f"rounded to lot size {capabilities.min_lot_size}")
+            raw_quantity = constrained_quantity
+        
+        # Apply step size constraints
+        if capabilities.step_size > 0:
+            # Round to nearest step
+            steps = round(raw_quantity / capabilities.step_size)
+            constrained_quantity = steps * capabilities.step_size
+            if abs(constrained_quantity - raw_quantity) > 0.001:  # Significant rounding
+                reasoning_parts.append(f"rounded to step size {capabilities.step_size}")
+            raw_quantity = constrained_quantity
+        
+        # Handle fractional shares
+        if not capabilities.fractional_shares:
+            # Round to whole shares
+            whole_quantity = round(raw_quantity)
+            if abs(whole_quantity - raw_quantity) > 0.001:  # Significant rounding
+                reasoning_parts.append("rounded to whole shares")
+            raw_quantity = whole_quantity
+        
+        # Apply maximum position size
+        if capabilities.max_position_size is not None:
+            if abs(raw_quantity) > capabilities.max_position_size:
+                raw_quantity = capabilities.max_position_size if raw_quantity > 0 else -capabilities.max_position_size
+                reasoning_parts.append(f"capped at max position {capabilities.max_position_size}")
+        
+        # Final check - ensure we still meet minimum notional after constraints
+        final_notional = abs(raw_quantity) * price
+        if final_notional < capabilities.min_notional and raw_quantity != 0:
+            reasoning_parts.append(f"final notional ${final_notional:.2f} below min ${capabilities.min_notional}")
+            return 0.0, f"rejected - {', '.join(reasoning_parts)}"
+        
+        if not reasoning_parts:
+            reasoning_parts.append("no constraints applied")
+            
+        return raw_quantity, ', '.join(reasoning_parts)
+
     def get_position_size(
         self,
         strategy_id: str | None,
@@ -186,7 +353,7 @@ class PositionSizer:
         **kwargs
     ) -> float:
         """
-        Get position size for a trading signal
+        Get position size for a trading signal (legacy method)
 
         Args:
             strategy_id: Strategy identifier (None for single strategy)
