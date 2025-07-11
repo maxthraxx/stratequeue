@@ -26,7 +26,7 @@ class SmaCross(Strategy):
         # Price crosses above → enter long (only if not already in position)
         if crossover(self.sma1, self.sma2):
             if not self.position:
-                self.buy(size=0.1)  # Use 10% of available capital
+                self.buy()  # Use 10% of available capital
 
         # Price crosses below → exit long if held
         elif crossover(self.sma2, self.sma1):
