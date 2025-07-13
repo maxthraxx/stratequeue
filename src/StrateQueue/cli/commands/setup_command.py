@@ -166,7 +166,7 @@ class SetupCommand(BaseCommand):
             canonical_brokers = set()
             for broker in brokers:
                 # Normalize to canonical name
-                if broker.lower() in ['ibkr', 'interactive-brokers', 'interactive_brokers']:
+                if broker.lower() in ['ibkr', 'interactive-brokers', 'interactive_brokers', 'ib_gateway']:
                     canonical_brokers.add('ibkr')
                 elif broker.lower() == 'alpaca':
                     canonical_brokers.add('alpaca')
