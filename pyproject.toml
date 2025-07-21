@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "StrateQueue"
-version = "0.2.1"
+version = "0.3.0r"
 description = "The fastest way from backtest to live trading"
 readme = "README.md"
 license = {text = "AGPL-3.0"}
@@ -43,6 +43,7 @@ dependencies = [
     "websocket-client>=1.6.0",
     "python-dotenv>=1.0.0",
     "alpaca-py>=0.40.0",
+    "ccxt>=4.4.96",
     "questionary>=1.10.0",
     "fastapi>=0.104.0",
     "uvicorn[standard]>=0.24.0",
@@ -238,5 +239,6 @@ markers = [
     "live_alpaca: marks tests that connect to live Alpaca API",
     "live_ibkr: marks tests that connect to live IBKR API",
     "network: marks tests that require network access",
+    "asyncio: marks tests as async tests",
     "dependency: marks tests with dependencies on other tests"
 ] 
