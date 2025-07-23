@@ -4,7 +4,7 @@
 
 <!---[![codecov](https://codecov.io/gh/stratequeue/stratequeue/branch/main/graph/badge.svg)](https://codecov.io/gh/stratequeue/stratequeue)-->
 
-📖**[Documenta](https://stratequeue.com/docs)**Squama 🚀**[Velox Start Guide](https://www.stratequeue.com/docs/quick-start)** | 💬 **[Conmunitas](https://discord.gg/H4hWAXJYqX)**
+📖**[Documenta](https://stratequeue.com/docs)**Squama 🚀**[Velox Start Guide](https://www.stratequeue.com/docs/quick-start)**Squama 💬**[Conmunitas](https://discord.gg/H4hWAXJYqX)**
 
 > **Et celerrime iter a backtest ad vivere negotiatione**[![Stargazers repo roster for @StrateQueue/StrateQueue](https://reporoster.com/stars/StrateQueue/StrateQueue)](https://github.com/StrateQueue/StrateQueue/stargazers)
 
