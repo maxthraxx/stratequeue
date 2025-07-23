@@ -1,0 +1,156 @@
+---
+title: "Setup"
+description: "Connect a broker for order-routing and a data provider for real-time candles."
+icon: Cog
+order: 2
+badge: "Get Connected"
+---
+
+# 🔧 Setup Guide
+
+The quick-start used the yfinance data source (not production suitable) and *signals-only* mode, so no credentials were needed.  
+To **paper-trade** or **go live** you'll add two things:
+
+1. A **broker** (sends orders)  
+2. A **data provider/source** (streams fresh market data)
+
+The `stratequeue setup` wizard writes your keys to  
+`~/.stratequeue/credentials.env`, which is auto-loaded on every run.
+
+> 🗝️  Credentials are stored **locally** in plain text.  
+> If you prefer, export the variables in your shell instead and skip the wizard.
+
+![Setup Demo](/setup.gif)
+*Interactive setup wizard walkthrough*
+
+---
+
+## 1 · Run the interactive wizard
+
+```bash
+# Ensure questionary is installed (pulled in by default)
+pip install stratequeue
+
+# Launch the menu
+stratequeue setup
+```
+
+Choose "Broker" first, then "Data Provider".  
+StrateQueue will confirm success and tell you to run `stratequeue status`.
+
+### Example session (Alpaca + Polygon)
+
+```text
+🔧 StrateQueue Setup
+──────────────────────────────────────────────
+? What would you like to configure?  Broker (trading platform credentials)
+? Select broker to configure:  Alpaca (US stocks, ETFs, crypto)
+
+📋 Alpaca Setup
+Get your API keys from: https://app.alpaca.markets/
+
+? Select trading mode:  Paper Trading
+? Paper API Key: ••••••••••••••••
+? Paper Secret Key: ••••••••••••••••••••••••••
+
+🔒 Credentials saved to /Users/you/.stratequeue/credentials.env
+✅ Alpaca credentials saved.
+💡 Test your setup with: stratequeue status
+```
+
+### Example session (CCXT + Binance)
+
+```text
+🔧 StrateQueue Setup
+──────────────────────────────────────────────
+? What would you like to configure?  Broker (trading platform credentials)
+? Select broker to configure:  CCXT (250+ cryptocurrency exchanges)
+
+🏦 CCXT Exchange Selection
+============================================================
+📈 Popular Exchanges:
+   1. Binance          (binance) 🧪 
+   2. Coinbase Pro     (coinbase) 🧪 🔑
+   3. Kraken           (kraken) 🔴 
+   4. Bybit            (bybit) 🧪 
+   5. OKX              (okx) 🧪 
+   ...
+  11. 📝 Manual input (other exchange)
+
+Enter your choice (1-12): 1
+✅ Selected: Binance (binance)
+
+📋 Binance Setup
+Get your API keys from: https://www.binance.com/en/my/settings/api-management
+
+? Enable testnet/sandbox mode? (recommended for testing)  Yes
+? API Key: ••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••
+? Secret Key: ••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••
+
+🔒 Credentials saved to /Users/you/.stratequeue/credentials.env
+✅ Binance credentials saved.
+💡 Test your setup with: stratequeue status
+```
+
+---
+
+## 2 · Manual & non-interactive options
+
+Prefer to handle environment variables yourself or on a server?
+
+```bash
+export PAPER_KEY=pk_your_key
+export PAPER_SECRET=ps_your_secret
+export POLYGON_API_KEY=poly_key
+export DATA_PROVIDER=polygon
+```
+
+StrateQueue looks for variables **in this order**:
+
+1. Variables already in the current shell  
+2. `.env` in the project folder  
+3. `~/.stratequeue/credentials.env`
+
+---
+
+## 3 · Environment variables reference
+
+| Type | Mode | Required variables |
+|------|------|--------------------|
+| Broker – Alpaca | Paper (recommended) | `PAPER_KEY`, `PAPER_SECRET`, `PAPER_ENDPOINT` *(defaults to https://paper-api.alpaca.markets)* |
+| Broker – Alpaca | Live (real money) | `ALPACA_API_KEY`, `ALPACA_SECRET_KEY`, `ALPACA_BASE_URL` *(defaults to https://api.alpaca.markets)* |
+| Broker – CCXT | Paper/Live | `CCXT_EXCHANGE`, `CCXT_API_KEY`, `CCXT_SECRET_KEY`, `CCXT_PASSPHRASE` *(if required)*, `CCXT_PAPER_TRADING=true` *(for testnet)* |
+| Broker – IBKR | Paper/Live | `IBKR_HOST`, `IBKR_PORT`, `IBKR_CLIENT_ID`, `IBKR_PAPER_TRADING=true` *(for paper)* |
+| Data - Polygon | — | `POLYGON_API_KEY`, `DATA_PROVIDER=polygon` |
+| Data - CoinMarketCap | — | `CMC_API_KEY`, `DATA_PROVIDER=coinmarketcap` |
+| Data - CCXT | — | `CCXT_EXCHANGE`, `CCXT_API_KEY`, `CCXT_SECRET_KEY` *(uses same as broker)* |
+| Data - IBKR | — | `IBKR_HOST`, `IBKR_PORT`, `IBKR_CLIENT_ID` *(uses same as broker)* |
+| Data - Yahoo Finance | — | *(no keys needed, rate limited)* |
+| Data - Demo | — | *(no keys needed)* |
+
+---
+
+## 4 · Verify your setup
+
+```bash
+stratequeue status          # checks broker credentials
+stratequeue deploy ...      # run your strategy with --paper or --live
+```
+
+If something is missing you'll see clear ❌ or ⚠️ messages along with a fix tip.
+
+---
+
+## 5 · Troubleshooting
+
+| Symptom | Fix |
+|---------|-----|
+| `❌ Not detected: Missing required Alpaca environment variables` | Re-run the wizard or export the keys manually |
+| *Wizard complains about questionary* | `pip install questionary` |
+| Credentials file ignored | Remember that shell exports override `.env` & `credentials.env` |
+
+---
+
+### 🎉 You're ready!
+
+Deploy with `--paper` for a dry-run, or `--live` once you're confident.

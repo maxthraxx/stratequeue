@@ -1,0 +1,155 @@
+---
+title: "Strategy Dashboard"
+description: "WebUI for deploying, monitoring and controlling live strategies."
+icon: Monitor
+order: 4
+badge: "Web UI"
+---
+
+# 🖥️ StrateQueue Web UI
+
+Prefer a **point-and-click** interface to the terminal?  
+The Web UI gives you a rich dashboard for strategy deployment, real-time metrics,
+and portfolio management – all running on top of the *same* daemon the CLI uses.
+
+---
+
+## 1 · Prerequisites
+
+| Requirement | Version | Purpose |
+|-------------|---------|---------|
+| Node.js & npm | ≥ 18 | Runs the Next.js front-end |
+| Python env   | 3.10-3.11 | Runs the StrateQueue daemon |
+| StrateQueue  | latest | CLI + backend |
+
+Check versions:
+
+```bash
+node -v    # v18+
+npm -v
+python3.10 -m stratequeue --version
+```
+
+---
+
+## 2 · One-Line Start
+
+```bash
+stratequeue webui
+```
+
+What happens under the hood:
+
+1. `stratequeue webui` calls `start_daemon_process()` – the FastAPI daemon is
+   started (or reused) on **127.0.0.1 : 8400**.  
+2. The Next.js dev server boots on **http://localhost:3000** (`npm run dev`).  
+3. Your default browser opens automatically (omit with `--no-browser`).  
+4. Logs are tee'd to `~/.stratequeue/logs/webui_<timestamp>.log`.
+
+Flags:
+
+| Flag | Effect |
+|------|--------|
+| `--dev` | Skip auto-open, useful while iterating on the front-end |
+| `--no-browser` | Never open a browser tab |
+| `--verbose` | Print extra daemon startup info |
+
+---
+
+## 3 · Initial Setup (first run only)
+
+If `npm` dependencies are missing you'll see:
+
+❌ Frontend dependencies are not installed.
+💡 Please run 'npm install' in the frontend directory:
+cd src/StrateQueue/webui/frontend
+npm install
+
+
+After running those commands, rerun `stratequeue webui`.
+
+---
+
+## 4 · Dashboard Tour
+
+| Area | What you'll see | Endpoint |
+|------|-----------------|----------|
+| **Overview cards** | Equity, P&L, active trades (live-updating) | GET `/status` |
+| **Strategies tab** | Table of deployed strategies with ID, symbol(s), allocation, status badge | GET `/status` |
+| **Actions** | • Pause / Resume • Undeploy • Duplicate | POST `/strategy/pause` etc. |
+| **Deploy dialog** | Upload or path-based deploy, pick execution mode (signals/paper/live) | POST `/strategy/upload` + `/strategy/deploy` |
+| **Trades / Logs** | Recent fills, raw daemon logs (streamed) | GET `/status` |
+| **System switch** | Start / Stop entire trading system | POST `/shutdown` |
+
+UI polling interval: **10 s** (see `fetchStrategies()` in
+`TradingDashboard.tsx`).
+
+---
+
+## 5 · Deploying from the UI
+
+1. Click **"Deploy Strategy"** (➕ icon).  
+2. Fill in:
+   • `.py` file or upload  
+   • Allocation (defaults to 1.0)  
+   • Symbol, data-source, timeframe  
+   • Execution mode *(signals, paper, live)*  
+3. Press **Deploy**.  
+4. The daemon creates/updates the `LiveTradingSystem` just like the CLI path
+   (see `/strategy/deploy` handler in `daemon/server.py`).  
+5. The new strategy appears in the table with a **Running** badge.
+
+Same validation rules apply – e.g. mixing % and $ allocations will return the
+exact error string produced by `DeployValidator`.
+
+---
+
+## 6 · Runtime Controls
+
+• **Pause / Resume** – toggles a strategy's event loop without losing state.  
+• **Stop (🟥)** – fully undeploys and (optionally) liquidates positions.  
+• **Global Stop** – `System → Stop` issues `/shutdown`, gracefully terminates
+  the orchestration loop and the data stream.
+
+---
+
+## 7 · Troubleshooting
+
+| Symptom | Diagnosis | Fix |
+|---------|-----------|-----|
+| Browser says *"Can't reach daemon"* | FastAPI not running | `stratequeue daemon start` or rerun `stratequeue webui` |
+| Port 3000 already in use | Another dev server running | `lsof -i :3000` then kill, or change `npm run dev -- -p 3001` |
+| `npm: command not found` | Node.js missing | Install from https://nodejs.org |
+| CORS error in console | Front-end hitting remote daemon | Ensure daemon allows origin or use same host |
+| Live data not updating | Daemon status stale | Check `~/.stratequeue/logs/webui_*.log` for 500 errors |
+
+---
+
+## 8 · Dev-Mode Workflow
+
+```bash
+# 1. Start backend daemon (in one terminal)
+stratequeue daemon start --verbose
+
+# 2. Start front-end in watch mode (second terminal)
+cd src/StrateQueue/webui/frontend
+npm run dev     # Hot-reload Next.js app
+```
+
+Edit any file under `frontend/src/**` and the page refreshes instantly.
+
+---
+
+### 🚀 That's the Web UI!
+
+Combine it with CLI power:
+
+```bash
+# Deploy from terminal, monitor in browser
+stratequeue deploy --strategy sma.py --symbol AAPL &
+
+# Open dashboard
+stratequeue webui --no-browser   # if you already have a tab open
+```
+
+Happy visual trading!

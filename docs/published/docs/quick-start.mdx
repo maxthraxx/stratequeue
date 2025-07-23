@@ -1,0 +1,132 @@
+---
+title: "Quick-Start Guide"
+description: "Install StrateQueue and see deploy in seconds."
+icon: Rocket
+order: 1
+---
+
+# 🚀 Quick-Start
+
+Pick **one** engine below, copy the install + deploy command, and you'll have live signals printing in your terminal in under five minutes—no broker keys required.
+
+> ⚠️ **One engine per environment** — VectorBT depends on NumPy 1.x while Zipline requires NumPy ≥2.x. Create a fresh virtualenv for each engine to avoid conflicts.
+
+---
+
+## 1 · Install & Run
+
+### Stock Trading (backtesting.py)
+```bash
+python -m venv venv && source venv/bin/activate  # optional but recommended
+pip install "stratequeue[backtesting]"
+
+# Run the SMA crossover demo (signals-only)
+stratequeue deploy \
+  --strategy examples/strategies/backtesting.py/sma.py \
+  --symbol AAPL \
+  --timeframe 1m
+```
+
+### Crypto Trading (CCXT)
+```bash
+python -m venv venv && source venv/bin/activate
+pip install "stratequeue[backtesting]" ccxt
+
+# Run crypto SMA demo on Binance (signals-only)
+stratequeue deploy \
+  --strategy examples/strategies/backtesting.py/sma.py \
+  --symbol ETHUSDC \
+  --timeframe 5m \
+  --broker ccxt.binance
+```
+
+### VectorBT
+```bash
+python -m venv venv && source venv/bin/activate
+pip install "stratequeue[vectorbt]"
+
+# Run the vectorbt SMA crossover demo (signals-only)
+stratequeue deploy \
+  --strategy examples/strategies/vectorbt/sma.py \
+  --symbol AAPL \
+  --timeframe 1m
+```
+
+### Backtrader
+```bash
+python -m venv venv && source venv/bin/activate
+pip install "stratequeue[backtrader]"
+
+# Run the Backtrader SMA demo (signals-only)
+stratequeue deploy \
+  --strategy examples/strategies/backtrader/sma.py \
+  --symbol AAPL \
+  --timeframe 1m
+```
+
+### Zipline-Reloaded
+```bash
+python -m venv venv && source venv/bin/activate
+pip install "stratequeue[zipline]"
+
+# Run the Zipline SMA demo (signals-only)
+stratequeue deploy \
+  --strategy examples/strategies/zipline-reloaded/sma.py \
+  --symbol AAPL \
+  --timeframe 1m
+```
+
+You should see output similar to:
+
+```text
+🚀 StrateQueue – Single Strategy
+📈 Symbol: AAPL   Engine: {'{engine}'}   Granularity: 1m
+💡 Trading: Signals-only (safe)
+──────────────────────────────────────────────
+14:30:15   BUY   185.42   sma crossover
+```
+
+*If the feed scrolls with new bars, your install is good to go.*
+
+![Quick Start Demo](/quick-start.gif)
+*Live demo of the quick-start process in action*
+
+---
+
+## 2 · What happened?
+
+1. Strategy file was auto-detected as **`{'{engine}'}`** and wrapped in the StrateQueue runtime.
+2. Demo data source delivered 1-minute candles for AAPL.
+3. Signals were printed instead of executed (safe default).
+
+---
+
+## 3 · Next Steps
+
+| Goal | Command | Docs |
+| ---- | ------- | ---- |
+| Paper trading | add `--paper` + finish setup | [Setup](/docs/setup) [Deploy](/docs/deploy) |
+| Live trading  | add `--live` + finish setup | [Setup](/docs/setup) [Deploy](/docs/deploy)|
+| Visual dashboard | `stratequeue webui` | [Dashboard](/docs/dashboard) |
+| Multi-strategy portfolio | comma-separate `--strategy` & `--allocation` | [Deploy](/docs/deploy#multi-strategy) |
+| Check system status | `stratequeue status` | [Setup](/docs/setup) |
+| List available options | `stratequeue list brokers` | [Deploy](/docs/deploy) |
+| Background daemon | `stratequeue daemon` | [Dashboard](/docs/dashboard) |
+
+---
+
+## 4 · Common Issues
+
+| Error | Fix |
+| ----- | --- |
+| `ModuleNotFoundError` for your engine | Ensure you installed the correct `pip install "stratequeue[engine]"` extra |
+| NumPy version conflict | New virtualenv, choose one engine per env |
+| No scrolling output | yfinance rate limit, try adding the flag: `--data-provider demo`|
+
+> 💡 **Need help?** Run `stratequeue deploy --help` or open an issue on GitHub.
+
+---
+
+### 🙌 You're all set!
+
+Edit the strategy file, re-run the command and iterate. When you're ready to trade real money, proceed to the **Setup** guide. 

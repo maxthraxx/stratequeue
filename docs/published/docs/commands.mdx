@@ -1,0 +1,306 @@
+---
+title: "Commands Reference"
+description: "Complete reference for all StrateQueue CLI commands and options."
+icon: Terminal
+order: 5
+badge: "CLI Reference"
+---
+
+# 🖥️ Commands Reference
+
+Complete guide to all StrateQueue CLI commands, options, and usage patterns.
+
+---
+
+## Core Commands
+
+### `stratequeue deploy`
+Launch trading strategies in signals, paper, or live mode.
+
+```bash
+stratequeue deploy --strategy my_strategy.py --symbol AAPL --timeframe 1m
+```
+
+**Required:**
+- `--strategy` - Strategy file(s) to deploy
+
+**Optional:**
+- `--allocation` - Position allocation (required for multi-strategy)
+- `--symbol` - Trading symbol(s)
+- `--timeframe` - Bar granularity (1s, 1m, 5m, 1h, 1d)
+- `--broker` - Broker to use (alpaca, ccxt.binance, ibkr)
+- `--data-source` - Data provider (polygon, demo, ccxt)
+- `--engine` - Backtesting engine (backtesting, vectorbt, zipline)
+- `--paper` - Paper trading mode
+- `--live` - Live trading mode (real money)
+- `--duration` - Runtime in minutes (default: 60)
+- `--lookback` - Historical bars to fetch (default: 60)
+- `--daemon` - Run in background daemon
+- `--verbose` - Detailed logging
+
+**Examples:**
+```bash
+# Signals only (safe)
+stratequeue deploy --strategy sma.py --symbol AAPL
+
+# Paper trading
+stratequeue deploy --strategy sma.py --symbol AAPL --paper
+
+# Multi-strategy portfolio
+stratequeue deploy --strategy sma.py,momentum.py --allocation 0.6,0.4 --symbol AAPL
+
+# Crypto trading
+stratequeue deploy --strategy crypto.py --symbol ETHUSDC --broker ccxt.binance --paper
+```
+
+---
+
+### `stratequeue setup`
+Interactive setup wizard for brokers and data providers.
+
+```bash
+stratequeue setup
+```
+
+**Features:**
+- Interactive broker selection (Alpaca, CCXT, IBKR)
+- Exchange selection for CCXT (250+ crypto exchanges)
+- Credential validation and secure storage
+- Paper/live trading mode configuration
+
+**Example Flow:**
+```text
+🔧 StrateQueue Setup
+? What would you like to configure? Broker
+? Select broker: CCXT (250+ cryptocurrency exchanges)
+? Select exchange: Binance
+? Enable testnet? Yes
+? API Key: [hidden]
+✅ Credentials saved
+```
+
+---
+
+### `stratequeue status`
+Check system health and broker connectivity.
+
+```bash
+stratequeue status [broker|provider|system]
+```
+
+**Options:**
+- `broker` - Check broker connection and credentials
+- `provider` - Check data provider status
+- `system` - Check both brokers and providers (default)
+- `--detailed` - Show detailed status information
+
+**Example Output:**
+```text
+🔧 StrateQueue System Status
+════════════════════════════════════════════════
+
+📊 Brokers
+✅ Alpaca (Paper) - Connected
+✅ CCXT Binance - Connected (Testnet)
+❌ IBKR - Not configured
+
+📈 Data Providers  
+✅ Polygon - API key valid
+✅ Demo - Available
+⚠️  Yahoo Finance - Rate limited
+```
+
+---
+
+### `stratequeue list`
+List available brokers, data providers, and engines.
+
+```bash
+stratequeue list [brokers|providers|engines]
+```
+
+**Options:**
+- `brokers` - Show all supported brokers
+- `providers` - Show all data providers
+- `engines` - Show installed backtesting engines
+
+**Example Output:**
+```text
+📊 Available Brokers
+════════════════════════════════════════════════
+
+Stock & ETF Trading:
+✅ alpaca - Alpaca Markets (US stocks, ETFs, crypto)
+✅ ibkr - Interactive Brokers (global markets)
+
+Cryptocurrency Trading (CCXT):
+✅ ccxt.binance - Binance (🧪 testnet available)
+✅ ccxt.coinbase - Coinbase Pro (🧪 sandbox, 🔑 passphrase)
+✅ ccxt.kraken - Kraken (🔴 live only)
+... and 247+ more exchanges
+```
+
+---
+
+### `stratequeue daemon`
+Start the REST API daemon server for WebUI and background operations.
+
+```bash
+stratequeue daemon [options]
+```
+
+**Options:**
+- `--port` - Port to bind server (default: 8400)
+- `--host` - Host to bind server (default: 0.0.0.0)
+- `--reload` - Enable auto-reload for development
+
+**Examples:**
+```bash
+# Start daemon on default port 8400
+stratequeue daemon
+
+# Custom port
+stratequeue daemon --port 8500
+
+# Development mode with auto-reload
+stratequeue daemon --reload
+```
+
+**API Endpoints:**
+- `GET /health` - Health check
+- `GET /status` - System status
+- `POST /strategy/deploy` - Deploy strategy
+- `POST /strategy/pause` - Pause strategy
+- `POST /shutdown` - Shutdown system
+
+---
+
+### `stratequeue webui`
+Launch the web dashboard interface.
+
+```bash
+stratequeue webui [options]
+```
+
+**Options:**
+- `--port` - Web server port (default: 5173)
+
+**Features:**
+- Visual strategy deployment
+- Real-time performance monitoring
+- Portfolio management
+- Trade history and logs
+- System controls (pause/resume/stop)
+
+**Auto-Setup:**
+- Installs npm dependencies on first run
+- Starts daemon automatically if not running
+- Opens browser automatically
+
+---
+
+## Advanced Usage
+
+### Environment Variables
+StrateQueue reads configuration from environment variables in this order:
+1. Current shell variables
+2. `.env` file in project directory
+3. `~/.stratequeue/credentials.env`
+
+### Multi-Strategy Configuration
+Create a `strategies.txt` file for complex portfolios:
+
+```text
+# Strategy file, allocation
+strategies/sma_short.py, 0.4
+strategies/momentum.py, 0.3
+strategies/mean_reversion.py, 0.3
+```
+
+Deploy with:
+```bash
+stratequeue deploy --config strategies.txt --symbol AAPL
+```
+
+### Background Operations
+Run strategies in the background using the daemon:
+
+```bash
+# Deploy to daemon (non-blocking)
+stratequeue deploy --strategy sma.py --symbol AAPL --daemon
+
+# Check daemon status
+curl http://localhost:8400/status
+
+# Stop all strategies
+curl -X POST http://localhost:8400/shutdown
+```
+
+### Logging and Debugging
+Enable detailed logging for troubleshooting:
+
+```bash
+# Verbose output
+stratequeue deploy --strategy sma.py --symbol AAPL --verbose
+
+# Check logs
+tail -f ~/.stratequeue/logs/stratequeue.log
+```
+
+---
+
+## Command Aliases
+
+Many commands have shorter aliases for convenience:
+
+| Command | Aliases |
+|---------|---------|
+| `stratequeue list` | `stratequeue ls` |
+| `stratequeue status` | `stratequeue check`, `stratequeue health` |
+| `stratequeue daemon` | `stratequeue server`, `stratequeue api` |
+| `stratequeue webui` | `stratequeue ui`, `stratequeue dashboard` |
+
+---
+
+## Global Options
+
+These options work with most commands:
+
+- `--help` - Show command help
+- `--version` - Show StrateQueue version
+- `--config` - Specify config file path
+- `--verbose` - Enable verbose output
+
+---
+
+## Exit Codes
+
+StrateQueue commands return standard exit codes:
+
+- `0` - Success
+- `1` - General error
+- `2` - Invalid arguments
+- `3` - Configuration error
+- `4` - Connection error
+
+Use in scripts:
+```bash
+if stratequeue status broker; then
+    echo "Broker is ready"
+    stratequeue deploy --strategy my_strategy.py --live
+else
+    echo "Broker setup required"
+    stratequeue setup broker
+fi
+```
+
+---
+
+## Getting Help
+
+- `stratequeue --help` - General help
+- `stratequeue <command> --help` - Command-specific help
+- `stratequeue list` - Show available options
+- `stratequeue status` - Check system health
+
+For detailed documentation, visit the [full documentation](/docs).

@@ -1,0 +1,288 @@
+---
+title: "Deploy"
+description: "Launch single- or multi-strategy trading systems in signals, paper, or live mode."
+icon: Play
+order: 3
+badge: "Start Trading"
+---
+
+# 🎬 Deploy Guide
+
+The **`stratequeue deploy`** command is the heart of StrateQueue.  
+It wraps your strategy files in the live trading runtime, streams market data, and (optionally) sends real trades to your broker.
+
+> 🛡️ **Safe by default** — if you don't pass `--paper` or `--live`, StrateQueue *only prints signals*.
+
+---
+
+## 1 · Command Anatomy
+
+```bash
+stratequeue deploy \
+  --strategy <file.py[,file2.py,...]> \
+  [ --allocation <pct|$>[, ...] ] \
+  [ --symbol TICKER[, ...] ] \
+  [ --data-source demo|polygon|coinmarketcap[, ...] ] \
+  [ --timeframe 1s|5m|1h[, ...] ] \
+  [ --broker alpaca|ccxt|ccxt.binance|ccxt.coinbase|... ] \
+  [ --engine backtesting|backtrader|vectorbt|zipline ] \
+  [ --paper | --live | --no-trading ] \
+  [ --duration 120 ] \
+  [ --lookback 200 ] \
+  [ --verbose ] \
+  [ --daemon ]
+```
+
+*Everything in brackets is optional; the only **required** flag is `--strategy`.*
+
+---
+
+## 2 · Execution Modes
+
+| Mode | Flag | Trades Sent? | Credentials Required |
+|------|------|-------------|-----------------------|
+| Signals-only *(default)* | — or `--no-trading` | ❌ | None |
+| Paper trading | `--paper` | ✅ – sandbox | Broker paper keys |
+| Live trading | `--live` | ✅ – real money | Broker live keys |
+
+> 🚨 Passing `--live` will print an extra warning block (see code in `DeployValidator`) before anything is executed.
+
+---
+
+## 3 · Single-Strategy Examples
+
+### Stock Trading (Alpaca)
+```bash
+# Test safely on demo data (prints signals every new bar)
+stratequeue deploy \
+  --strategy examples/strategies/backtesting.py/sma.py \
+  --symbol AAPL --timeframe 1m
+
+# Paper trade on Polygon real-time feed
+stratequeue deploy \
+  --strategy my_algo.py --symbol AAPL \
+  --data-source polygon --timeframe 1m --paper
+```
+
+### Crypto Trading (CCXT)
+```bash
+# Test crypto strategy with signals-only (safe)
+stratequeue deploy \
+  --strategy my_crypto_algo.py \
+  --symbol ETHUSDC --timeframe 5m \
+  --broker ccxt.binance
+
+# Paper trade on Binance testnet
+stratequeue deploy \
+  --strategy my_crypto_algo.py \
+  --symbol ETHUSDC --timeframe 1m \
+  --broker ccxt.binance --paper
+
+# Live crypto trading (real money)
+stratequeue deploy \
+  --strategy my_crypto_algo.py \
+  --symbol ETHUSDC --timeframe 5m \
+  --broker ccxt.binance --live
+```
+
+### Engine Selection
+```bash
+# Explicitly pick an engine (overrides auto-detect)
+stratequeue deploy \
+  --strategy my_vbt_algo.py --engine vectorbt \
+  --symbol ETH-USD --timeframe 5m --no-trading
+```
+
+---
+
+## 4 · Supported Brokers
+
+### Stock & ETF Trading
+- **Alpaca**: `--broker alpaca` (US markets, paper + live trading)
+- **Interactive Brokers**: `--broker ibkr` (global markets)
+
+### Cryptocurrency Trading (CCXT)
+- **Generic CCXT**: `--broker ccxt` (uses `CCXT_EXCHANGE` env var)
+- **Exchange-specific**: `--broker ccxt.binance`, `--broker ccxt.coinbase`, etc.
+
+Popular CCXT exchanges:
+- `ccxt.binance` - Binance (🧪 testnet available)
+- `ccxt.coinbase` - Coinbase Pro (🧪 sandbox available, 🔑 passphrase required)
+- `ccxt.kraken` - Kraken (🔴 live trading only)
+- `ccxt.bybit` - Bybit (🧪 testnet available)
+- `ccxt.okx` - OKX (🧪 testnet available)
+- `ccxt.kucoin` - KuCoin
+- `ccxt.huobi` - Huobi
+- `ccxt.bitfinex` - Bitfinex
+- `ccxt.gateio` - Gate.io
+- `ccxt.mexc` - MEXC
+
+> 💡 **Symbols for crypto**: Use exchange format like `BTC/USDT`, `ETH/USD`, `DOGE/USDC`
+
+### Broker Auto-Detection
+If you don't specify `--broker`, StrateQueue auto-detects based on environment variables:
+- Finds `ALPACA_API_KEY` → uses Alpaca
+- Finds `CCXT_EXCHANGE` → uses CCXT
+- Finds `IBKR_*` → uses Interactive Brokers
+
+---
+
+## 5 · Multi-Strategy Portfolios
+
+Passing **multiple files** to `--strategy` switches StrateQueue into **multi-strategy mode**.
+
+### 4.1 Inline allocations
+
+```bash
+# 70 % SMA + 30 % Momentum on the same symbol
+stratequeue deploy \
+  --strategy sma.py,momentum.py \
+  --allocation 0.7,0.3 \
+  --symbol AAPL --timeframe 1m
+```
+
+Rules enforced by `DeployValidator`:
+
+1. `--allocation` **is mandatory** in multi-strategy mode.  
+2. Values can be **all percentages** (`0-1`) or **all dollar amounts** (`>1`) — mixing types raises an error.  
+3. Percentages should sum ≈ 100 %; a warning is logged otherwise.
+
+### 4.2 1 : 1 strategy-symbol mapping
+
+If the number of symbols **equals** the number of strategies, StrateQueue pairs them automatically:
+
+```bash
+# Each strategy on its own market
+stratequeue deploy \
+  --strategy btc_scalper.py,eth_swing.py \
+  --allocation 0.5,0.5 \
+  --symbol BTCUSD,ETHUSD \
+  --timeframe 1m
+```
+
+Internally a temporary CSV config is generated (see `create_inline_strategy_config`).
+
+---
+
+## 5 · Advanced Flags
+
+| Flag | Purpose | Default |
+|------|---------|---------|
+| `--data-source` | `demo`, `polygon`, `coinmarketcap` *(one or many)* | `demo` |
+| `--timeframe / --granularity` | Bar size per data source. Validity checked by `validate_granularity`. | — |
+| `--broker` | Override auto-detected broker (`alpaca`, `kraken`, …). Use `auto` or omit to let StrateQueue inspect env vars. | auto |
+| `--engine` | Force engine if auto-detection fails (`backtesting`, `vectorbt`, `zipline`). | auto |
+| `--lookback` | Historical bars to fetch **plus one** (implemented as `type=lambda x: int(x)+1`). | 60 |
+| `--duration` | Minutes to run before graceful shutdown. | 60 |
+| `--verbose` | Extra log output (`stratequeue.log`). | off |
+| `--daemon` | Sends the deployment to the background REST daemon on port 8400. | off |
+
+--
+
+## 6 · Background Daemon
+
+```bash
+# Non-blocking: returns immediately, leaves strategy running in the daemon
+stratequeue deploy --strategy sma.py --symbol AAPL --daemon
+```
+
+If the daemon isn't running, StrateQueue will **spawn it automatically**, then POST the deployment request (see `_send_to_daemon()`).
+
+Check status later:
+
+```bash
+stratequeue status           # broker + engine health
+curl http://127.0.0.1:8400   # daemon API
+```
+
+---
+
+## 7 · Discoverability Cheatsheet
+
+```bash
+stratequeue list engines      # Which engines are installed & usable
+stratequeue list brokers      # Supported brokers
+```
+
+Need a refresher?
+
+```bash
+stratequeue deploy --help
+```
+
+The help text is generated straight from `DeployCommand.setup_parser()` and always up to date.
+
+---
+
+## 8 · Additional Commands
+
+### System Status & Health
+```bash
+# Check broker and data provider status
+stratequeue status
+
+# Check specific component
+stratequeue status broker
+stratequeue status provider
+
+# Detailed status information
+stratequeue status --detailed
+```
+
+### List Available Options
+```bash
+# List all supported brokers
+stratequeue list brokers
+
+# List all data providers
+stratequeue list providers
+
+# List installed engines
+stratequeue list engines
+```
+
+### Background Daemon
+```bash
+# Start REST API daemon (for WebUI)
+stratequeue daemon
+
+# Start on custom port
+stratequeue daemon --port 8500
+
+# Start with auto-reload (development)
+stratequeue daemon --reload
+```
+
+### Web Dashboard
+```bash
+# Launch web interface
+stratequeue webui
+
+# Launch on custom port
+stratequeue webui --port 3001
+```
+
+---
+
+## 9 · Troubleshooting
+
+| Message | Likely Cause | Fix |
+|---------|--------------|-----|
+| `❌ Strategy file not found:` | Path typo | Provide correct `.py` path |
+| `--allocation is required for multi-strategy mode` | Forgot allocations | Add `--allocation` values |
+| `Cannot mix percentage and dollar allocations` | Mixed `0.5,1000` | Use *all* percentages **or** *all* dollars |
+| `Unsupported broker 'x'` | Wrong name | `stratequeue list brokers` |
+| No scrolling output | yfinance rate-limit | `--data-source something` or lower bar freq |
+| Live mode prompt not shown | Forgot `--live` | Add it (double-check keys first!) |
+
+---
+
+### 🎉 Deployment mastered!
+
+You can now iterate fast:
+
+1. Edit the strategy file  
+2. Rerun the same `deploy` command  
+3. Level-up from *signals* → *paper* → *live* when ready  
+
+Happy trading! 🚀
