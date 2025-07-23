@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "StrateQueue"
-version = "0.3.0r"
+version = "0.3.0release"
 description = "The fastest way from backtest to live trading"
 readme = "README.md"
 license = {text = "AGPL-3.0"}
