@@ -4,7 +4,7 @@
 
 <!---[![codecov](https://codecov.io/gh/stratequeue/stratequeue/branch/main/graph/badge.svg)](https://codecov.io/gh/stratequeue/stratequeue)-->
 
-📖**[Documenta](https://stratequeue.com/docs)**Squama 🚀**[Velox Start Guide](https://www.stratequeue.com/docs/quick-start)**Squama 💬**[Conmunitas](https://discord.gg/H4hWAXJYqX)**
+📖**[Documenta](https://stratequeue.com/docs)**Squama 🚀**[Velox Start Guide](https://www.stratequeue.com/docs/quick-start)** | 💬 **[Conmunitas](https://discord.gg/H4hWAXJYqX)**
 
 > **Et celerrime iter a backtest ad vivere negotiatione**[![Stargazers repo roster for @StrateQueue/StrateQueue](https://reporoster.com/stars/StrateQueue/StrateQueue)](https://github.com/StrateQueue/StrateQueue/stargazers)
 
@@ -64,6 +64,8 @@ class SMAStrategy(Strategy):
       --symbol AAPL \
       --timeframe 1m
 
+Nota: ut ccxt utere`--broker/data-source ccxt.<broker>`Syntax
+
 ![Quick Start Demo](examples/vhs/quick-start.gif)
 
 ## 🛠️ Pertifisites
@@ -115,7 +117,7 @@ stratequeue webui
 | ├─ vectorbt                 | ✅ implemented                  |
 | ├age backtrader             | ✅ implemented                  |
 | └─ Zipline-Reloaded         | ✅ implemented                  |
-| **Sectoribus**              |                                |
+| **Sectores**                |                                |
 | ├age alpaca                 | ✅ implemented                  |
 | ├cam interactive sectoribus | ✅ implemented                  |
 | ├age kraken                 | ❌ venire cito                  |
@@ -150,7 +152,7 @@ stratequeue webui
 Stratequeue est aperta-fonte Toolkit provisum**"Sicut, est" pro educational et informational proposita tantum**.
 
 -   Facit**non**constituere investment consilium, brokerage officia, aut commendaticiis emere aut vendere aliqua financial instrumentum.
--   Omnes negotiationem involves substantial periculo**past performance is not indicative of future results**. Vos may perdere aliquas et omnia tua capitis.
+-   Omnes negotiationem involves substantial periculo**Praeterita perficientur non indicativo futuris results**. Vos may perdere aliquas et omnia tua capitis.
 -   Per usura stratequeue agnoscere quod**Tu solus es responsible pro negotiatione decisions**et conveniunt, quod stratequeue mainttainers et contibriores erit**non obnoxia pro nulla damnum vel damnum**ex usu huius software.
 -   Consule qualified financial professional ante explicando vivere capitis.
 
