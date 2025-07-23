@@ -120,14 +120,14 @@ stratequeue webui
 | **Sectores**                |                                |
 | ├age alpaca                 | ✅ implemented                  |
 | ├cam interactive sectoribus | ✅ implemented                  |
-| ├age kraken                 | ❌ venire cito                  |
-| └─ binance                  | ❌ venire cito                  |
+| ├─ CCXT                     | 🟠 implemented (non temptavit) |
 | **Data providers**          |                                |
 | ├age yfinance               | ✅ implemented                  |
 | Cle Cle Polygon.io          | ✅ implemented                  |
 | ├cam coinmarketcap          | ✅ implemented                  |
 | ├age alpaca                 | ✅ implemented                  |
 | └─ Interactive sectoribus   | 🟠 implemented (non temptavit) |
+| └─ CCXT                     | 🟠 implemented (non temptavit) |
 
 ## ✨ Quid stratequeue?
 
