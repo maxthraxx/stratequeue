@@ -68,6 +68,8 @@ stratequeue deploy \
   --timeframe 1m
 ```
 
+NOTE: To use CCXT, use the ```--broker/data-source ccxt.<broker>``` syntax
+
 ![Quick Start Demo](examples/vhs/quick-start.gif)
 
 ## 🛠️ Prerequisites
