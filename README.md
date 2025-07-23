@@ -122,14 +122,14 @@ stratequeue webui
 | **Brokers** | |
 | ├─ Alpaca | ✅ Implemented |
 | ├─ Interactive Brokers | ✅ Implemented |
-| ├─ Kraken | ❌ Coming Soon |
-| └─ Binance | ❌ Coming Soon |
+| ├─ CCXT | 🟠 Implemented (not tested) |
 | **Data Providers** | |
 | ├─ yfinance | ✅ Implemented |
 | ├─ Polygon.io | ✅ Implemented |
 | ├─ CoinMarketCap | ✅ Implemented |
 | ├─ Alpaca | ✅ Implemented |
 | └─ Interactive Brokers | 🟠 Implemented (not tested) |
+| └─ CCXT | 🟠 Implemented (not tested) |
 
 ## ✨ Why StrateQueue?
 
