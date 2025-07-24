@@ -386,9 +386,9 @@ class TradingEngine(ABC):
             # Find strategy candidates using engine-specific validation
             strategy_candidates = find_strategy_candidates(module, self.is_valid_strategy)
             
-            # Select single strategy using shared utility
-            strategy_name, strategy_obj = select_single_strategy(
-                strategy_candidates, strategy_path, self.get_explicit_marker()
+            # Select single strategy using shared utility with module-aware marker checking
+            strategy_name, strategy_obj = self._select_single_strategy_with_module_marker(
+                strategy_candidates, strategy_path, module
             )
             
             logger.info(f"Loaded {self.__class__.__name__} strategy: {strategy_name} from {strategy_path}")
@@ -401,6 +401,45 @@ class TradingEngine(ABC):
         except Exception as e:
             logger.error(f"Error loading {self.__class__.__name__} strategy from {strategy_path}: {e}")
             raise
+
+    def _select_single_strategy_with_module_marker(self, candidates: Dict[str, Any], 
+                                                 strategy_path: str, module: ModuleType) -> tuple[str, Any]:
+        """
+        Select a single strategy from candidates, checking both object-level and module-level markers.
+        
+        Args:
+            candidates: Dictionary of strategy name -> strategy object
+            strategy_path: Path to strategy file (for error messages)
+            module: Loaded module to check for module-level markers
+            
+        Returns:
+            Tuple of (strategy_name, strategy_object)
+        """
+        explicit_marker = self.get_explicit_marker()
+        
+        # First try the standard selection logic
+        try:
+            return select_single_strategy(candidates, strategy_path, explicit_marker)
+        except ValueError as e:
+            # If standard selection fails and we have an explicit marker, 
+            # check for module-level marker as fallback
+            if explicit_marker and hasattr(module, explicit_marker) and getattr(module, explicit_marker, False):
+                # Module has the marker - look for a preferred strategy name pattern
+                preferred_names = [name for name in candidates.keys() 
+                                 if not name.startswith('create_') and not name.startswith('build_')]
+                
+                if len(preferred_names) == 1:
+                    strategy_name = preferred_names[0]
+                    logger.info(f"Using module-marked strategy: {strategy_name}")
+                    return strategy_name, candidates[strategy_name]
+                elif len(preferred_names) == 0:
+                    # No preferred names, just take the first candidate
+                    strategy_name, strategy_obj = next(iter(candidates.items()))
+                    logger.info(f"Using first strategy from module-marked file: {strategy_name}")
+                    return strategy_name, strategy_obj
+            
+            # Re-raise the original error if module-level marker doesn't help
+            raise e
 
     @abstractmethod
     def create_signal_extractor(
