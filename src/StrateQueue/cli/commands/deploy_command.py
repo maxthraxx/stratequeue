@@ -470,7 +470,7 @@ def _start_stats_server(stats_manager, port: int):
         except Exception as e:
             return {'error': str(e)}
 
-    cfg = Config(app, host='127.0.0.1', port=port, log_level='warning')
+    cfg = Config(app, host='127.0.0.1', port=port, log_level='warning', loop='asyncio')
     thread = threading.Thread(target=Server(cfg).run, daemon=True)
     thread.start()
     return port
