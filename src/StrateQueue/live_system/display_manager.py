@@ -40,7 +40,7 @@ class DisplayManager:
         duration_minutes: int,
         strategy_info: str,
         enable_trading: bool,
-        alpaca_executor=None,
+        broker_executor=None,
     ):
         """Display system startup information"""
         print(f"\n{'='*60}")
@@ -60,8 +60,9 @@ class DisplayManager:
         print(f"Duration: {duration_minutes} minutes")
 
         if enable_trading:
-            print("💰 Trading: ENABLED via Alpaca")
-            if alpaca_executor and alpaca_executor.config.paper_trading:
+            broker_name = self._get_broker_display_name(broker_executor)
+            print(f"💰 Trading: ENABLED via {broker_name}")
+            if broker_executor and broker_executor.config.paper_trading:
                 print("📝 Mode: PAPER TRADING")
             else:
                 print("🔴 Mode: LIVE TRADING")
@@ -69,6 +70,50 @@ class DisplayManager:
             print("📊 Trading: SIGNALS ONLY (no execution)")
 
         print(f"{'='*60}\n")
+
+    def _get_broker_display_name(self, broker_executor) -> str:
+        """Get a user-friendly display name for the broker"""
+        if not broker_executor:
+            return "Unknown"
+        
+        try:
+            # Try to get broker type from config
+            if hasattr(broker_executor, 'config') and hasattr(broker_executor.config, 'broker_type'):
+                broker_type = broker_executor.config.broker_type
+                
+                # Map broker types to display names
+                display_names = {
+                    'alpaca': 'Alpaca',
+                    'ibkr': 'Interactive Brokers',
+                    'ib_gateway': 'Interactive Brokers Gateway',
+                    'ccxt': 'CCXT',
+                }
+                
+                # Handle CCXT exchange-specific brokers
+                if broker_type == 'ccxt' and hasattr(broker_executor.config, 'additional_params'):
+                    exchange = broker_executor.config.additional_params.get('exchange')
+                    if exchange:
+                        return f"CCXT ({exchange.title()})"
+                
+                # Handle ccxt.exchange format
+                if broker_type.startswith('ccxt.'):
+                    exchange = broker_type.split('.', 1)[1]
+                    return f"CCXT ({exchange.title()})"
+                
+                return display_names.get(broker_type, broker_type.title())
+            
+            # Fallback: try to get broker info
+            if hasattr(broker_executor, 'get_broker_info'):
+                broker_info = broker_executor.get_broker_info()
+                if broker_info and hasattr(broker_info, 'name'):
+                    return broker_info.name
+            
+            # Last resort: use class name
+            return broker_executor.__class__.__name__.replace('Broker', '')
+            
+        except Exception as e:
+            logger.debug(f"Error getting broker display name: {e}")
+            return "Unknown"
 
     def display_signal(
         self, symbol: str, signal: TradingSignal, count: int, strategy_id: str | None = None
@@ -135,7 +180,7 @@ class DisplayManager:
                     self.log_trade(symbol, signal)
                     signal_count += 1
 
-    def display_session_summary(self, active_signals: dict, alpaca_executor=None):
+    def display_session_summary(self, active_signals: dict, broker_executor=None):
         """Display trading session summary"""
         print(f"\n{'='*60}")
         print("📊 SESSION SUMMARY")
@@ -170,8 +215,8 @@ class DisplayManager:
                     print(f"  • {symbol}: {signal.signal.value} @ {PriceFormatter.format_price_for_display(signal.price)}")
 
         # Show trading summary if enabled
-        if alpaca_executor:
-            self._display_trading_summary(alpaca_executor)
+        if broker_executor:
+            self._display_trading_summary(broker_executor)
 
         # Show statistics summary if available
         if self.statistics_manager:
@@ -181,11 +226,11 @@ class DisplayManager:
         print("\nTrade log saved to stratequeue.log")
         print(f"{'='*60}")
 
-    def _display_trading_summary(self, alpaca_executor):
+    def _display_trading_summary(self, broker_executor):
         """Display trading/portfolio summary"""
         try:
-            account_info = alpaca_executor.get_account_info()
-            positions = alpaca_executor.get_positions()
+            account_info = broker_executor.get_account_info()
+            positions = broker_executor.get_positions()
 
             print("\n📈 TRADING SUMMARY:")
             print(f"  Portfolio Value: ${account_info.get('portfolio_value', 0):,.2f}")
