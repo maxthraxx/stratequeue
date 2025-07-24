@@ -18,16 +18,24 @@ from ..engines.engine_base import (TradingEngine, EngineStrategy, EngineSignalEx
 
 logger = logging.getLogger(__name__)
 
-# Try to import Zipline dependencies
+# Conditional import for zipline library with dependency checking
 try:
     import zipline
     from zipline import TradingAlgorithm
     import zipline.api
-    
-    # Pre-patch zipline.api to handle strategies that call these functions at import time
-    _ORIGINAL_ZIPLINE_FUNCTIONS = {}
-    _SID_COUNTER = itertools.count()  # Global counter for unique asset SIDs
-    
+    ZIPLINE_AVAILABLE = True
+except (ImportError, AttributeError, ValueError) as e:
+    zipline = None
+    TradingAlgorithm = None
+    logger.warning(f"Zipline-Reloaded not available: {e}")
+    ZIPLINE_AVAILABLE = False
+
+# Pre-patch zipline.api to handle strategies that call these functions at import time
+# Only if zipline is available
+_ORIGINAL_ZIPLINE_FUNCTIONS = {}
+_SID_COUNTER = itertools.count()  # Global counter for unique asset SIDs
+
+if ZIPLINE_AVAILABLE:
     def _pre_patch_zipline_api():
         """Pre-patch zipline.api with safe mock functions"""
         global _ORIGINAL_ZIPLINE_FUNCTIONS
@@ -76,16 +84,9 @@ try:
         zipline.api.order_target = safe_order_target
         zipline.api.order_target_percent = safe_order_target_percent
         zipline.api.order_target_value = safe_order_target_value
-    
+
     # Apply pre-patching immediately
     _pre_patch_zipline_api()
-    
-    ZIPLINE_AVAILABLE = True
-except ImportError as e:
-    zipline = None
-    TradingAlgorithm = None
-    logger.warning(f"Zipline-Reloaded not available: {e}")
-    ZIPLINE_AVAILABLE = False
 
 
 class ZiplineEngineStrategy(EngineStrategy):
