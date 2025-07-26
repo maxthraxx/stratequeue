@@ -117,29 +117,57 @@ class DeployValidator(BaseValidator):
         import sys
         data_source_explicitly_set = '--data-source' in sys.argv
         if data_sources == ['demo'] and not data_source_explicitly_set:
-            # Check if broker is specified or can be auto-detected
-            detected_broker = None
-            
-            if brokers and brokers[0]:
-                # Broker explicitly specified
-                detected_broker = brokers[0]
+            # Check if brokers are specified
+            if brokers and any(brokers):
+                # Map each broker to its corresponding data source
+                mapped_data_sources = []
+                for broker in brokers:
+                    if broker:
+                        # Handle specific broker mappings first
+                        if broker == 'alpaca':
+                            mapped_data_sources.append('alpaca')
+                        elif broker in ['ibkr', 'IBKR', 'interactive-brokers', 'interactive_brokers', 'ib_gateway', 'ibkr_gateway', 'ib-gateway', 'gateway']:
+                            mapped_data_sources.append('ibkr')
+                        else:
+                            # General case: default data source to same as broker
+                            mapped_data_sources.append(broker)
+                    else:
+                        mapped_data_sources.append('demo')
+                
+                if mapped_data_sources:
+                    data_sources = mapped_data_sources
+                    if len(set(mapped_data_sources)) == 1:
+                        # All brokers map to the same data source
+                        print(f"🔗 Auto-detected {brokers[0]} broker(s) - using {mapped_data_sources[0]} data source")
+                    else:
+                        # Multiple different data sources
+                        print(f"🔗 Auto-detected brokers - mapping to corresponding data sources")
+                        for i, (broker, ds) in enumerate(zip(brokers, mapped_data_sources)):
+                            if broker:
+                                print(f"   Strategy {i+1}: {broker} → {ds}")
+                    print("💡 Override with --data-source if you prefer a different source")
             else:
                 # Try to auto-detect broker from environment
                 try:
                     from ...brokers import detect_broker_type
                     detected_broker = detect_broker_type()
+                    if detected_broker and detected_broker != 'unknown':
+                        # Handle specific broker mappings first
+                        if detected_broker == 'alpaca':
+                            data_sources = ['alpaca']
+                            print("🔗 Auto-detected Alpaca broker - using Alpaca data source")
+                            print("💡 Override with --data-source if you prefer a different source")
+                        elif detected_broker in ['ibkr', 'IBKR', 'interactive-brokers', 'interactive_brokers', 'ib_gateway', 'ibkr_gateway', 'ib-gateway', 'gateway']:
+                            data_sources = ['ibkr']
+                            print("🔗 Auto-detected IBKR broker - using IBKR data source")
+                            print("💡 Override with --data-source if you prefer a different source")
+                        else:
+                            # General case: default data source to same as broker
+                            data_sources = [detected_broker]
+                            print(f"🔗 Auto-detected {detected_broker} broker - using {detected_broker} data source")
+                            print("💡 Override with --data-source if you prefer a different source")
                 except ImportError:
                     pass
-            
-            # Auto-pair broker with matching data source
-            if detected_broker == 'alpaca':
-                data_sources = ['alpaca']
-                print("🔗 Auto-detected Alpaca broker - using Alpaca data source")
-                print("💡 Override with --data-source if you prefer a different source")
-            elif detected_broker in ['ibkr', 'IBKR', 'interactive-brokers', 'interactive_brokers', 'ib_gateway', 'ibkr_gateway', 'ib-gateway', 'gateway']:
-                data_sources = ['ibkr']
-                print("🔗 Auto-detected IBKR broker - using IBKR data source")
-                print("💡 Override with --data-source if you prefer a different source")
 
         # Apply smart defaults for multi-value arguments
         try:
