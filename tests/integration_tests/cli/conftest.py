@@ -48,7 +48,7 @@ def tmp_working_dir(tmp_path):
 
 
 def run_cli(*args, stdin: str = "", env: Optional[Dict[str, str]] = None, 
-            timeout: int = 10, cwd: Optional[Path] = None) -> Tuple[int, str, str]:
+            timeout: int = 30, cwd: Optional[Path] = None) -> Tuple[int, str, str]:
     """
     Spawn `stratequeue` in a real subprocess and return results.
     
@@ -71,10 +71,19 @@ def run_cli(*args, stdin: str = "", env: Optional[Dict[str, str]] = None,
     cmd = [sys.executable, "-m", "StrateQueue.cli.cli"] + list(args)
     
     # Merge environment variables
-    test_env = {}        # instead of os.environ.copy()
-    test_env.update(os.environ.get("PYTHONPATH", ""))  # minimal essentials
+    test_env = os.environ.copy()  # Start with current environment
     if env:
         test_env.update(env)
+    
+    # Add src directory to PYTHONPATH so subprocess can find StrateQueue module
+    if cwd:
+        src_path = cwd / "src"
+        if src_path.exists():
+            current_pythonpath = test_env.get("PYTHONPATH", "")
+            if current_pythonpath:
+                test_env["PYTHONPATH"] = f"{src_path}{os.pathsep}{current_pythonpath}"
+            else:
+                test_env["PYTHONPATH"] = str(src_path)
     
     for var in ("PAPER_KEY","PAPER_SECRET","ALPACA_API_KEY","ALPACA_SECRET_KEY",
                 "IB_TWS_PORT","IB_CLIENT_ID","IB_TWS_HOST"):

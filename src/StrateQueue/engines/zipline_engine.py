@@ -84,7 +84,7 @@ try:
 except ImportError as e:
     zipline = None
     TradingAlgorithm = None
-    logger.warning(f"Zipline-Reloaded not available: {e}")
+    logger.info(f"Zipline-Reloaded not available: {e}")
     ZIPLINE_AVAILABLE = False
 
 

@@ -20,7 +20,7 @@
 # I beg you,
 # Turn back the clock. Revert the commits. Rebuild it, lest the bottomless pit claim us all.
 
-from src.StrateQueue.cli import cli_main
+from src.StrateQueue.cli.cli import main
 
 if __name__ == "__main__":
-    exit(cli_main())
+    exit(main())

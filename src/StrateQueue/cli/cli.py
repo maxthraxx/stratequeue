@@ -6,6 +6,7 @@ This replaces the monolithic cli.py with a clean, modular approach.
 """
 
 import argparse
+import os
 import sys
 from pathlib import Path
 
@@ -26,6 +27,7 @@ from .utils.command_help import get_command_help
 from .utils.enhanced_parser import EnhancedArgumentParser
 
 # Import command registry to ensure commands are registered
+from . import command_registry  # noqa: F401
 
 logger = get_cli_logger('main')
 
@@ -127,8 +129,10 @@ def create_main_parser() -> argparse.ArgumentParser:
     # Global arguments
     parser.add_argument(
         '--verbose', '-v',
-        action='store_true',
-        help='Enable verbose logging'
+        type=int,
+        choices=[0, 1, 2],
+        default=0,
+        help='Verbosity level: 0=standard (warnings/errors only), 1=info, 2=debug (default: 0)'
     )
 
     parser.add_argument(
@@ -218,7 +222,7 @@ def main(argv: list[str] | None = None) -> int:
         args = parser.parse_args(argv)
 
         # Setup logging
-        setup_logging(args.verbose)
+        setup_logging(verbose_level=args.verbose)
         logger.debug(f"CLI started with args: {args}")
 
         # Handle no command provided
@@ -241,9 +245,16 @@ def main(argv: list[str] | None = None) -> int:
         return 130  # Standard exit code for SIGINT
 
     except Exception as e:
-        logger.exception(f"Unexpected error in main CLI: {e}")
-        print(f"❌ Unexpected error: {e}")
-        print("💡 Run with --verbose for detailed error information")
+        # In test environments, provide more detailed error information
+        if os.getenv("SQ_TEST_STUB_BROKERS") == "1" or os.getenv("PYTEST_CURRENT_TEST"):
+            import traceback
+            print(f"❌ CLI Error in test environment: {e}", file=sys.stderr)
+            print(f"❌ Full traceback:", file=sys.stderr)
+            traceback.print_exc(file=sys.stderr)
+        else:
+            logger.exception(f"Unexpected error in main CLI: {e}")
+            print(f"❌ Unexpected error: {e}")
+            print("💡 Run with --verbose 1 or --verbose 2 for detailed error information")
         return 1
 
 

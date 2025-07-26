@@ -24,7 +24,7 @@ except ImportError as e:
     BACKTRADER_AVAILABLE = False
     bt = None
     logger = logging.getLogger(__name__)
-    logger.warning(f"Backtrader not available: {e}")
+    logger.info(f"Backtrader not available: {e}")
 
 from ..core.signal_extractor import SignalType, TradingSignal
 from ..core.base_signal_extractor import BaseSignalExtractor

@@ -16,7 +16,7 @@ Requirements for passing tests:
 """
 
 import pytest
-from .conftest import run_cli, normalize_output
+from tests.integration_tests.cli.conftest import run_cli, normalize_output
 
 
 class TestListCommandEndToEnd:

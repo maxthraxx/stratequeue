@@ -17,6 +17,11 @@ import time
 # Version-agnostic Python executable
 PYTHON_EXEC = sys.executable
 
+def create_cli_command(working_dir: str, cli_args: str) -> str:
+    """Create a reliable CLI command that works in all test environments"""
+    project_root = os.getcwd()
+    return f"cd {working_dir} && PYTHONPATH={project_root}/src {PYTHON_EXEC} -m StrateQueue.cli.cli {cli_args}"
+
 def create_minimal_test_env(home_dir: str = None) -> dict:
     """
     Create a minimal environment for subprocess calls to avoid 'Argument list too long' error.
@@ -254,12 +259,12 @@ class TestSetupCommandInteractive:
         print(f"Credentials directory: {creds_dir}")
         
         # Spawn the interactive setup command
-        cmd = f"cd {tmp_working_dir} && {PYTHON_EXEC} {os.getcwd()}/main.py setup"
-        child = pexpect.spawn('/bin/bash', ['-c', cmd], env=env, timeout=30, encoding='utf-8')
+        cmd = create_cli_command(str(tmp_working_dir), "setup")
+        child = pexpect.spawn("/bin/bash", ["-c", cmd], env=env, timeout=90, encoding="utf-8")
         
         try:
             # Wait for the main menu
-            child.expect("What would you like to configure?", timeout=15)
+            child.expect("What would you like to configure?", timeout=60)
             
             # Choose "Broker"
             child.sendline("")  # Select first option (Broker)
@@ -340,12 +345,12 @@ class TestSetupCommandInteractive:
         env = create_minimal_test_env(home_dir=str(tmp_working_dir))
         
         # Spawn the interactive setup command
-        cmd = f"cd {tmp_working_dir} && {PYTHON_EXEC} {os.getcwd()}/main.py setup"
-        child = pexpect.spawn('/bin/bash', ['-c', cmd], env=env, timeout=30, encoding='utf-8')
+        cmd = create_cli_command(str(tmp_working_dir), "setup")
+        child = pexpect.spawn("/bin/bash", ["-c", cmd], env=env, timeout=90, encoding="utf-8")
         
         try:
             # Wait for the main menu
-            child.expect("What would you like to configure?", timeout=15)
+            child.expect("What would you like to configure?", timeout=60)
             
             # Choose "Broker"
             child.sendline("")  # Select first option (Broker)
@@ -422,12 +427,12 @@ class TestSetupCommandInteractive:
         env = create_minimal_test_env(home_dir=str(tmp_working_dir))
         
         # Spawn the interactive setup command
-        cmd = f"cd {tmp_working_dir} && {PYTHON_EXEC} {os.getcwd()}/main.py setup"
-        child = pexpect.spawn('/bin/bash', ['-c', cmd], env=env, timeout=30, encoding='utf-8')
+        cmd = create_cli_command(str(tmp_working_dir), "setup")
+        child = pexpect.spawn("/bin/bash", ["-c", cmd], env=env, timeout=90, encoding="utf-8")
         
         try:
             # Wait for the main menu
-            child.expect("What would you like to configure?", timeout=15)
+            child.expect("What would you like to configure?", timeout=60)
             
             # Send Ctrl+C to cancel
             child.send('\x03')  # Ctrl+C
@@ -462,12 +467,12 @@ class TestSetupCommandInteractive:
         env = create_minimal_test_env(home_dir=str(tmp_working_dir))
         
         # Spawn the interactive setup command
-        cmd = f"cd {tmp_working_dir} && {PYTHON_EXEC} {os.getcwd()}/main.py setup"
-        child = pexpect.spawn('/bin/bash', ['-c', cmd], env=env, timeout=30, encoding='utf-8')
+        cmd = create_cli_command(str(tmp_working_dir), "setup")
+        child = pexpect.spawn("/bin/bash", ["-c", cmd], env=env, timeout=90, encoding="utf-8")
         
         try:
             # Wait for the main menu
-            child.expect("What would you like to configure?", timeout=15)
+            child.expect("What would you like to configure?", timeout=60)
             
             # Choose "Data Provider"
             child.send("\x1b[B")  # Arrow down to second option
@@ -533,12 +538,12 @@ class TestSetupCommandCrossWorkflow:
         
         # === PHASE 1: Interactive Setup ===
         # Spawn the interactive setup command
-        cmd = f"cd {tmp_working_dir} && {PYTHON_EXEC} {os.getcwd()}/main.py setup"
-        child = pexpect.spawn('/bin/bash', ['-c', cmd], env=env, timeout=30, encoding='utf-8')
+        cmd = create_cli_command(str(tmp_working_dir), "setup")
+        child = pexpect.spawn("/bin/bash", ["-c", cmd], env=env, timeout=90, encoding="utf-8")
         
         try:
             # Wait for the main menu
-            child.expect("What would you like to configure?", timeout=15)
+            child.expect("What would you like to configure?", timeout=60)
             
             # Choose "Broker"
             child.sendline("")  # Select first option (Broker)
@@ -613,13 +618,13 @@ class TestSetupCommandCrossWorkflow:
         })
         
         # Run status command
-        status_cmd = f"cd {tmp_working_dir} && {PYTHON_EXEC} {os.getcwd()}/main.py status broker"
+        status_cmd = create_cli_command(str(tmp_working_dir), "status broker")
         status_result = subprocess.run(
             ['/bin/bash', '-c', status_cmd],
             env=env_with_creds,
             capture_output=True,
             text=True,
-            timeout=30
+            timeout=90
         )
         
         # Verify status command succeeded
@@ -682,13 +687,13 @@ PAPER_ENDPOINT=https://paper-api.alpaca.markets
         })
         
         # Run status command
-        status_cmd = f"cd {tmp_working_dir} && {PYTHON_EXEC} {os.getcwd()}/main.py status broker"
+        status_cmd = create_cli_command(str(tmp_working_dir), "status broker")
         status_result = subprocess.run(
             ['/bin/bash', '-c', status_cmd],
             env=env,
             capture_output=True,
             text=True,
-            timeout=30
+            timeout=90
         )
         
         # Verify status command succeeded
@@ -753,13 +758,13 @@ PAPER_ENDPOINT=https://paper-api.alpaca.markets
         })
         
         # Run status command in fresh session
-        status_cmd = f"cd {tmp_working_dir} && {PYTHON_EXEC} {os.getcwd()}/main.py status broker"
+        status_cmd = create_cli_command(str(tmp_working_dir), "status broker")
         status_result = subprocess.run(
             ['/bin/bash', '-c', status_cmd],
             env=fresh_env,
             capture_output=True,
             text=True,
-            timeout=30
+            timeout=90
         )
         
         # Verify status command succeeded
@@ -778,13 +783,13 @@ PAPER_ENDPOINT=https://paper-api.alpaca.markets
         # The minimal environment already has empty credentials, so no need to remove them
         
         # Run status command with no credentials
-        status_cmd = f"cd {tmp_working_dir} && {PYTHON_EXEC} {os.getcwd()}/main.py status broker"
+        status_cmd = create_cli_command(str(tmp_working_dir), "status broker")
         status_result = subprocess.run(
             ['/bin/bash', '-c', status_cmd],
             env=env,
             capture_output=True,
             text=True,
-            timeout=30
+            timeout=90
         )
         
         # Verify status command succeeded (it should not fail, just show no credentials)

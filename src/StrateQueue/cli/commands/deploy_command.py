@@ -19,7 +19,7 @@ from fastapi.encoders import jsonable_encoder
 from uvicorn import Config, Server
 from ..formatters.base_formatter import BaseFormatter
 from ..utils.deploy_utils import parse_symbols
-from ..utils.logging_setup import setup_logging
+
 from ..validators.deploy_validator import DeployValidator
 from .base_command import BaseCommand
 
@@ -156,11 +156,7 @@ class DeployCommand(BaseCommand):
             help='Optional port for the embedded statistics server (0 = auto)'
         )
 
-        system_group.add_argument(
-            '--verbose',
-            action='store_true',
-            help='Enable verbose logging'
-        )
+
 
         return parser
 
@@ -174,9 +170,8 @@ class DeployCommand(BaseCommand):
         Returns:
             Exit code (0 for success, 1 for error)
         """
-        # Setup logging if verbose mode
-        if hasattr(args, 'verbose') and args.verbose:
-            setup_logging(verbose=True, log_file='stratequeue.log')
+        # Logging is already set up by the main CLI based on global --verbose flag
+        # No need to set it up again here
 
         # Validate engine availability if specified
         if hasattr(args, 'engine') and args.engine:
