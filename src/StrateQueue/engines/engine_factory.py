@@ -34,11 +34,12 @@ class EngineFactory:
             
             if BacktestingEngine.dependencies_available():
                 cls._engines['backtesting'] = BacktestingEngine
-                logger.debug("Registered backtesting engine")
+                logger.debug("Registered backtesting.py engine")
             else:
-                cls._unavailable_engines['backtesting'] = "backtesting.py not installed. Run: pip install stratequeue[backtesting]"
+                cls._unavailable_engines['backtesting'] = "backtesting library not installed. Run: pip install stratequeue[backtesting]"
                 logger.debug("backtesting.py dependencies not available - engine skipped")
-        except ImportError as e:
+        except Exception as e:
+            cls._unavailable_engines['backtesting'] = f"Backtesting engine unavailable: {e}"
             logger.debug(f"Could not import backtesting engine module: {e}")
         
         # Backtrader engine
@@ -52,7 +53,8 @@ class EngineFactory:
             else:
                 cls._unavailable_engines['backtrader'] = "Backtrader not installed. Run: pip install stratequeue[backtrader]"
                 logger.debug("Backtrader dependencies not available - engine skipped")
-        except ImportError as e:
+        except Exception as e:
+            cls._unavailable_engines['backtrader'] = f"Backtrader engine unavailable: {e}"
             logger.debug(f"Could not import Backtrader engine module: {e}")
         
         # VectorBT engine
@@ -66,7 +68,8 @@ class EngineFactory:
             else:
                 cls._unavailable_engines['vectorbt'] = "VectorBT not installed. Run: pip install stratequeue[vectorbt]"
                 logger.debug("VectorBT dependencies not available - engine skipped")
-        except ImportError as e:
+        except Exception as e:
+            cls._unavailable_engines['vectorbt'] = f"VectorBT engine unavailable: {e}"
             logger.debug(f"Could not import VectorBT engine module: {e}")
         
         # Zipline engine
@@ -80,10 +83,78 @@ class EngineFactory:
             else:
                 cls._unavailable_engines['zipline'] = "Zipline-Reloaded not installed. Run: pip install stratequeue[zipline]"
                 logger.debug("Zipline dependencies not available - engine skipped")
-        except ImportError as e:
+        except Exception as e:
+            # Catch ALL exceptions to prevent any single engine from breaking the factory
+            cls._unavailable_engines['zipline'] = f"Zipline engine unavailable: {e}"
             logger.debug(f"Could not import Zipline engine module: {e}")
+        
+        # BT engine
+        try:
+            from .bt_engine import BtEngine
+            cls._all_known_engines['bt'] = BtEngine
             
+            if BtEngine.dependencies_available():
+                cls._engines['bt'] = BtEngine
+                logger.debug("Registered BT engine")
+            else:
+                cls._unavailable_engines['bt'] = "bt library not installed. Run: pip install stratequeue[bt]"
+                logger.debug("bt dependencies not available - engine skipped")
+        except Exception as e:
+            cls._unavailable_engines['bt'] = f"BT engine unavailable: {e}"
+            logger.debug(f"Could not import BT engine module: {e}")
+        
         cls._initialized = True
+    
+    @classmethod
+    def _refresh_engine_state(cls, engine_type: str) -> None:
+        """
+        Re-evaluate the dependency status of *one* engine and synchronise all
+        internal caches.  This lets tests monkey-patch BT_AVAILABLE without
+        having to tear the factory down completely.
+        """
+        if engine_type not in cls._all_known_engines:
+            return
+
+        eng_cls = cls._all_known_engines[engine_type]
+        
+        # For bt engine, ensure we're working with the real module, not a mock
+        if engine_type == 'bt':
+            try:
+                # Force re-import to get the current state, not a cached mock
+                import importlib
+                import sys
+                bt_module_name = 'StrateQueue.engines.bt_engine'
+                if bt_module_name in sys.modules:
+                    importlib.reload(sys.modules[bt_module_name])
+                    from .bt_engine import BtEngine
+                    eng_cls = BtEngine
+                    cls._all_known_engines[engine_type] = eng_cls
+            except Exception:
+                # If reload fails, use the existing class
+                pass
+        
+        try:
+            deps_ok = eng_cls.dependencies_available()
+        except Exception:          # pragma: no cover – extremely defensive
+            deps_ok = False
+
+        if deps_ok:
+            cls._engines[engine_type] = eng_cls
+            cls._unavailable_engines.pop(engine_type, None)
+        else:
+            cls._engines.pop(engine_type, None)
+            if engine_type == 'bt':
+                cls._unavailable_engines[engine_type] = "bt library not installed. Run: pip install stratequeue[bt]"
+            elif engine_type == 'backtesting':
+                cls._unavailable_engines[engine_type] = "backtesting.py not installed. Run: pip install stratequeue[backtesting]"
+            elif engine_type == 'backtrader':
+                cls._unavailable_engines[engine_type] = "Backtrader not installed. Run: pip install stratequeue[backtrader]"
+            elif engine_type == 'vectorbt':
+                cls._unavailable_engines[engine_type] = "VectorBT not installed. Run: pip install stratequeue[vectorbt]"
+            elif engine_type == 'zipline':
+                cls._unavailable_engines[engine_type] = "Zipline-Reloaded not installed. Run: pip install stratequeue[zipline]"
+            else:
+                cls._unavailable_engines[engine_type] = f"{engine_type} dependencies not installed"
     
     @classmethod
     def create_engine(cls, engine_type: str) -> TradingEngine:
@@ -100,6 +171,7 @@ class EngineFactory:
             ValueError: If engine type is not supported
         """
         cls._initialize_engines()
+        cls._refresh_engine_state(engine_type)
         
         if engine_type not in cls._engines:
             available = list(cls._engines.keys())
@@ -119,6 +191,9 @@ class EngineFactory:
             List of engine type names that can be instantiated
         """
         cls._initialize_engines()
+        # lazily re-validate every known engine before returning
+        for et in list(cls._all_known_engines):
+            cls._refresh_engine_state(et)
         return list(cls._engines.keys())
     
     @classmethod
@@ -155,6 +230,7 @@ class EngineFactory:
             True if engine is supported and can be instantiated
         """
         cls._initialize_engines()
+        cls._refresh_engine_state(engine_type)
         return engine_type in cls._engines
     
     @classmethod
@@ -201,6 +277,10 @@ def detect_engine_type(strategy_path: str) -> str:
             logger.debug(f"Zipline indicators: {indicators['zipline']}")
         if indicators.get('vectorbt'):
             logger.debug(f"VectorBT indicators: {indicators['vectorbt']}")
+        if indicators.get('backtrader'):
+            logger.debug(f"Backtrader indicators: {indicators['backtrader']}")
+        if indicators.get('bt'):
+            logger.debug(f"BT indicators: {indicators['bt']}")
             
         return engine_type
         
