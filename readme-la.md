@@ -94,6 +94,8 @@ pip install "stratequeue[backtrader]"
 pip install "stratequeue[backtesting]"
 # VectorBT support
 pip install "stratequeue[vectorbt]"
+# BT support
+pip install "stratequeue[bt]"
 # Everything
 pip install "stratequeue[all]"
 ```
@@ -116,6 +118,7 @@ stratequeue webui
 | Cie ├ backtesting.py        | ✅ implemented                  |
 | ├─ vectorbt                 | ✅ implemented                  |
 | ├age backtrader             | ✅ implemented                  |
+| ├age bt                     | ✅ implemented                  |
 | └─ Zipline-Reloaded         | ✅ implemented                  |
 | **Sectores**                |                                |
 | ├age alpaca                 | ✅ implemented                  |
