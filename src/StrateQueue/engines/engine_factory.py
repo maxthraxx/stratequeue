@@ -82,20 +82,6 @@ class EngineFactory:
                 logger.debug("Zipline dependencies not available - engine skipped")
         except ImportError as e:
             logger.debug(f"Could not import Zipline engine module: {e}")
-        
-        # BT engine
-        try:
-            from .bt_engine import BtEngine
-            cls._all_known_engines['bt'] = BtEngine
-            
-            if BtEngine.dependencies_available():
-                cls._engines['bt'] = BtEngine
-                logger.debug("Registered BT engine")
-            else:
-                cls._unavailable_engines['bt'] = "bt library not installed. Run: pip install stratequeue[bt]"
-                logger.debug("bt dependencies not available - engine skipped")
-        except ImportError as e:
-            logger.debug(f"Could not import BT engine module: {e}")
             
         cls._initialized = True
     
@@ -215,10 +201,6 @@ def detect_engine_type(strategy_path: str) -> str:
             logger.debug(f"Zipline indicators: {indicators['zipline']}")
         if indicators.get('vectorbt'):
             logger.debug(f"VectorBT indicators: {indicators['vectorbt']}")
-        if indicators.get('backtrader'):
-            logger.debug(f"Backtrader indicators: {indicators['backtrader']}")
-        if indicators.get('bt'):
-            logger.debug(f"BT indicators: {indicators['bt']}")
             
         return engine_type
         
