@@ -685,6 +685,10 @@ class BacktraderEngine(TradingEngine):
             getattr(obj, "buy", None)
         )
     
+    def get_explicit_marker(self) -> str:
+        """Get the explicit marker for Backtrader strategies"""
+        return '__backtrader_strategy__'
+    
     def create_engine_strategy(self, strategy_obj: Any) -> BacktraderEngineStrategy:
         """Create a Backtrader engine strategy wrapper"""
         return BacktraderEngineStrategy(strategy_obj)

@@ -293,6 +293,44 @@ backtrader_patterns = [
 # 3. Capture trade decisions
 ```
 
+### VectorBT Engine (AST-Based Detection)
+
+VectorBT uses **AST-based detection** to identify strategies by analyzing the Python code structure:
+
+```python
+# Key VectorBT patterns detected via AST:
+class VectorBTDetector(ast.NodeVisitor):
+    def visit_Import(self, node):
+        # Detects: import vectorbt as vbt, from vectorbtpro import *
+        
+    def visit_Call(self, node):
+        # Detects: vbt.Portfolio.from_signals(), MA.run(), etc.
+        
+    def visit_Attribute(self, node):
+        # Detects: .vbt accessor usage
+        
+    def visit_FunctionDef(self, node):
+        # Detects: @njit decorators, tuple returns (entries, exits)
+
+# Detected indicators include:
+# - imports vectorbt/vectorbtpro
+# - uses .vbt accessor
+# - uses Portfolio.from_signals/from_holding/from_orders
+# - uses indicator.run() methods (MA.run, RSI.run, etc.)
+# - uses vbt.broadcast()
+# - uses @njit/@jit decorators
+# - returns tuple (entries, exits) or (entries, exits, size)
+# - function with data parameter (when combined with VBT-specific patterns)
+# - class with run method (when combined with VBT-specific patterns)
+# - marked with __vbt_strategy__ explicit marker
+```
+
+**Signal extraction approach:**
+1. Call strategy function/class with historical data
+2. Extract entries/exits boolean Series
+3. Convert to TradingSignal based on latest values
+4. Support both function-based and class-based strategies
+
 ## 📋 Required Interface Implementation
 
 Every new engine **must** implement these abstract methods:

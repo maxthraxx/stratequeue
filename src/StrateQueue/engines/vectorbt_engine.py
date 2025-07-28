@@ -404,17 +404,57 @@ class VectorBTEngine(TradingEngine):
     
     def is_valid_strategy(self, name: str, obj: Any) -> bool:
         """Check if object is a valid VectorBT strategy"""
+        # Check for explicit marker first
+        if hasattr(obj, '__vbt_strategy__'):
+            return True
+            
         # Look for functions that could be VectorBT strategies
         if inspect.isfunction(obj):
-            # Check if function has data parameter and returns entries/exits
-            sig = inspect.signature(obj)
-            return 'data' in sig.parameters
+            try:
+                # Use AST analysis to detect VectorBT patterns in the function
+                source = inspect.getsource(obj)
+                from .engine_helpers import _detect_vectorbt_with_ast
+                indicators = _detect_vectorbt_with_ast(source)
+                
+                # Consider it a VectorBT strategy if we detect specific VectorBT patterns
+                vbt_specific_patterns = [
+                    "imports vectorbt", "imports vectorbtpro", "uses .vbt accessor",
+                    "uses Portfolio.from_signals", "uses Portfolio.from_holding",
+                    "uses Portfolio.from_orders", "uses indicator.run() methods",
+                    "uses vbt.broadcast", "returns tuple (entries, exits)"
+                ]
+                
+                return any(pattern in indicators for pattern in vbt_specific_patterns)
+                
+            except (OSError, TypeError):
+                # Fallback to signature analysis if source code unavailable
+                sig = inspect.signature(obj)
+                return 'data' in sig.parameters
         
         # Look for classes marked as VectorBT strategies
         elif inspect.isclass(obj):
-            return (hasattr(obj, '__vbt_strategy__') or 
-                    hasattr(obj, 'run') or 
-                    name.endswith('Strategy'))
+            # Check for explicit marker or run method
+            if hasattr(obj, '__vbt_strategy__') or hasattr(obj, 'run'):
+                return True
+                
+            # Use AST analysis for class-based strategies
+            try:
+                source = inspect.getsource(obj)
+                from .engine_helpers import _detect_vectorbt_with_ast
+                indicators = _detect_vectorbt_with_ast(source)
+                
+                vbt_specific_patterns = [
+                    "imports vectorbt", "imports vectorbtpro", "uses .vbt accessor",
+                    "uses Portfolio.from_signals", "uses Portfolio.from_holding",
+                    "uses Portfolio.from_orders", "uses indicator.run() methods",
+                    "class with run method"
+                ]
+                
+                return any(pattern in indicators for pattern in vbt_specific_patterns)
+                
+            except (OSError, TypeError):
+                # Fallback to name-based detection
+                return name.endswith('Strategy')
         
         return False
     

@@ -476,8 +476,9 @@ class TestEdgeCasesAndIntegration:
         assert isinstance(df, pd.DataFrame)
         assert not df.empty
         assert "UNKNOWN" in test_ingestion.current_prices
-        # Price should be within reasonable range (generated randomly)
-        assert 50 <= test_ingestion.current_prices["UNKNOWN"] <= 500
+        # Price should be positive and reasonable (can drift from initial 50-500 range due to random walk)
+        assert test_ingestion.current_prices["UNKNOWN"] > 0
+        assert test_ingestion.current_prices["UNKNOWN"] < 1000  # Reasonable upper bound
 
     def test_generate_realtime_bar_unknown_symbol(self, test_ingestion):
         """Test _generate_realtime_bar with unknown symbol"""

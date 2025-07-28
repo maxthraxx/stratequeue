@@ -268,20 +268,6 @@ def detect_engine_type(strategy_path: str) -> str:
         engine_type = detect_engine_from_analysis(analysis)
         
         logger.info(f"Detected engine type '{engine_type}' for {strategy_path}")
-        
-        # Log detected indicators for debugging
-        indicators = analysis['engine_indicators']
-        if indicators.get('backtesting'):
-            logger.debug(f"backtesting.py indicators: {indicators['backtesting']}")
-        if indicators.get('zipline'):
-            logger.debug(f"Zipline indicators: {indicators['zipline']}")
-        if indicators.get('vectorbt'):
-            logger.debug(f"VectorBT indicators: {indicators['vectorbt']}")
-        if indicators.get('backtrader'):
-            logger.debug(f"Backtrader indicators: {indicators['backtrader']}")
-        if indicators.get('bt'):
-            logger.debug(f"BT indicators: {indicators['bt']}")
-            
         return engine_type
         
     except Exception as e:
