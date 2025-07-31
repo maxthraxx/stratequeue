@@ -126,7 +126,7 @@ stratequeue webui
 | ├─ CCXT                     | 🟠 implemented (non temptavit) |
 | **Data providers**          |                                |
 | ├age yfinance               | ✅ implemented                  |
-| Cle Cle Polygon.io          | ✅ implemented                  |
+| ├─ Polygon.io               | ✅ Implemented                  |
 | ├cam coinmarketcap          | ✅ implemented                  |
 | ├age alpaca                 | ✅ implemented                  |
 | └─ Interactive sectoribus   | 🟠 implemented (non temptavit) |
