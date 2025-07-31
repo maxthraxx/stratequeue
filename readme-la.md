@@ -120,7 +120,7 @@ stratequeue webui
 | ├age backtrader             | ✅ implemented                  |
 | ├age bt                     | ✅ implemented                  |
 | └─ Zipline-Reloaded         | ✅ implemented                  |
-| **Sectoribus**              |                                |
+| **Sectores**                |                                |
 | ├age alpaca                 | ✅ implemented                  |
 | ├cam interactive sectoribus | ✅ implemented                  |
 | ├─ CCXT                     | 🟠 implemented (non temptavit) |
