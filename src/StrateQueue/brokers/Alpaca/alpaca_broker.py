@@ -494,13 +494,21 @@ class AlpacaBroker(BaseBroker):
                 "opg": TimeInForce.OPG,
                 "cls": TimeInForce.CLS,
             }
-            time_in_force = tif_map.get(time_in_force_str.lower(), TimeInForce.DAY)
 
             # Override for crypto
             is_crypto = "/" in alpaca_symbol
             if is_crypto:
-                time_in_force = TimeInForce.GTC
+                logger.debug(f"🔍 Crypto order (place_order) - time_in_force_str: '{time_in_force_str}'")
+                # For crypto orders, only allow gtc or ioc (Alpaca requirement)
+                if time_in_force_str.lower() in ["gtc", "ioc"]:
+                    time_in_force = tif_map.get(time_in_force_str.lower(), TimeInForce.GTC)
+                    logger.debug(f"✅ Using time_in_force_str: {time_in_force}")
+                else:
+                    time_in_force = TimeInForce.GTC
+                    logger.debug(f"⚠️ Invalid crypto time_in_force_str '{time_in_force_str}', defaulting to GTC")
                 extended_hours = False  # Not applicable for crypto
+            else:
+                time_in_force = tif_map.get(time_in_force_str.lower(), TimeInForce.DAY)
 
             # Base parameters for all order types
             base_params = {
@@ -577,6 +585,7 @@ class AlpacaBroker(BaseBroker):
                 )
 
             # Submit order
+            logger.debug(f"🔍 Order details (place_order) - time_in_force: {order_request.time_in_force}, symbol: {order_request.symbol}")
             order = self.trading_client.submit_order(order_request)
 
             return OrderResult(
@@ -806,16 +815,24 @@ class AlpacaBroker(BaseBroker):
                 "opg": TimeInForce.OPG,
                 "cls": TimeInForce.CLS,
             }
-            time_in_force = tif_map.get(signal.time_in_force.lower(), TimeInForce.DAY)
 
             # Determine if crypto and extended-hours settings
             is_crypto = "/" in symbol  # Crypto pairs have "/" like "ETH/USD"
+            
+            # For crypto orders, only allow gtc or ioc (Alpaca requirement)
+            if is_crypto:
+                logger.debug(f"🔍 Crypto order - signal time_in_force: '{signal.time_in_force}'")
+                if signal.time_in_force.lower() in ["gtc", "ioc"]:
+                    time_in_force = tif_map.get(signal.time_in_force.lower(), TimeInForce.GTC)
+                    logger.debug(f"✅ Using signal time_in_force: {time_in_force}")
+                else:
+                    time_in_force = TimeInForce.GTC
+                    logger.debug(f"⚠️ Invalid crypto time_in_force '{signal.time_in_force}', defaulting to GTC")
+            else:
+                time_in_force = tif_map.get(signal.time_in_force.lower(), TimeInForce.DAY)
+            
             # Strategy passes extended-hours in metadata: {'extended_hours': True}
             extended_hours = (signal.metadata or {}).get("extended_hours", False) and not is_crypto
-
-            # Override time in force for crypto (must be GTC)
-            if is_crypto:
-                time_in_force = TimeInForce.GTC
 
             # Check for bracket/OCO/OTO order class signals
             tp = signal.metadata.get("tp") if signal.metadata else None
@@ -915,7 +932,25 @@ class AlpacaBroker(BaseBroker):
 
             # Create order request based on signal type
             if signal.signal in [SignalType.BUY, SignalType.SELL, SignalType.CLOSE]:
-                order_request = MarketOrderRequest(**base_params)
+                # For market orders, only pass the essential parameters
+                market_params = {
+                    "symbol": base_params["symbol"],
+                    "side": base_params["side"],
+                    "time_in_force": base_params["time_in_force"],
+                    "client_order_id": base_params["client_order_id"],
+                }
+                
+                # Add quantity or notional (but not both)
+                if "notional" in base_params:
+                    market_params["notional"] = base_params["notional"]
+                elif "qty" in base_params:
+                    market_params["qty"] = base_params["qty"]
+                
+                # Add extended_hours only for non-crypto
+                if not is_crypto and base_params.get("extended_hours"):
+                    market_params["extended_hours"] = base_params["extended_hours"]
+                
+                order_request = MarketOrderRequest(**market_params)
 
             elif signal.signal in [SignalType.LIMIT_BUY, SignalType.LIMIT_SELL]:
                 base_params["limit_price"] = signal.limit_price or signal.price
@@ -948,6 +983,7 @@ class AlpacaBroker(BaseBroker):
 
             # Submit the order with concise logging
             logger.debug(f"🚀 Submitting {signal.signal.value} order to Alpaca: {order_request}")
+            logger.debug(f"🔍 Order details - time_in_force: {order_request.time_in_force}, symbol: {order_request.symbol}")
             order = self.trading_client.submit_order(order_request)
             logger.info(f"✅ Order submitted: {order.side.value} {order.symbol} (ID: {order.id})")
             if order_class:
