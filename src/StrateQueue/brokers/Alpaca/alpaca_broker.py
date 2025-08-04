@@ -836,7 +836,9 @@ class AlpacaBroker(BaseBroker):
             }
 
             # Determine if crypto and extended-hours settings
-            is_crypto = "/" in symbol  # Crypto pairs have "/" like "ETH/USD"
+            # Crypto pairs can have "/" like "ETH/USD" or be in Alpaca format like "ETHUSD", "DOGEUSD"
+            crypto_symbols = ["BTCUSD", "ETHUSD", "DOGEUSD", "LTCUSD", "BCHUSD", "ADAUSD", "DOTUSD", "UNIUSD", "LINKUSD", "SOLUSD"]
+            is_crypto = "/" in symbol or symbol in crypto_symbols
             
             # For crypto orders, only allow gtc or ioc (Alpaca requirement)
             if is_crypto:
