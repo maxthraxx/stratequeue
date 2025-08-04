@@ -377,7 +377,6 @@ class DeployCommand(BaseCommand):
                     # Dollar allocation - use FixedDollarSizing
                     from ...core.position_sizer import FixedDollarSizing, PositionSizer
                     position_sizer = PositionSizer(FixedDollarSizing(allocation_value))
-                    print(f"💰 Using fixed dollar allocation: ${allocation_value:.2f} per trade")
                 else:
                     # Percentage allocation - use PercentOfCapitalSizing
                     from ...core.position_sizer import PercentOfCapitalSizing, PositionSizer
