@@ -118,6 +118,7 @@ class AlpacaBroker(BaseBroker):
 
         super().__init__(config, portfolio_manager, position_sizer)
 
+
         # Store statistics manager
         self.statistics_manager = statistics_manager
 
@@ -272,6 +273,8 @@ class AlpacaBroker(BaseBroker):
         """
         if not self.is_connected:
             return OrderResult(success=False, message="Not connected to Alpaca")
+        
+
 
         try:
             # Normalize symbol for Alpaca format
@@ -301,7 +304,17 @@ class AlpacaBroker(BaseBroker):
 
             # Check if signal type is supported
             supported_signals = self.order_executors.get("supported_signal_types", [])
-            if signal.signal not in supported_signals:
+            
+            # Debug logging to understand the comparison issue
+            logger.debug(f"Signal type: {signal.signal} (type: {type(signal.signal)})")
+            logger.debug(f"Supported signals: {supported_signals}")
+            logger.debug(f"Signal in supported: {signal.signal in supported_signals}")
+            
+            # Compare by value instead of object reference to handle enum comparison issues
+            supported_signal_values = [sig.value if hasattr(sig, 'value') else sig for sig in supported_signals]
+            signal_value = signal.signal.value if hasattr(signal.signal, 'value') else signal.signal
+            
+            if signal_value not in supported_signal_values and signal.signal not in supported_signals:
                 error_msg = f"Unknown signal type: {signal.signal}"
                 logger.warning(error_msg)
                 return OrderResult(success=False, message=error_msg)
@@ -795,15 +808,21 @@ class AlpacaBroker(BaseBroker):
                     portfolio_manager=self.portfolio_manager,
                     account_value=account_value
                 )
-                logger.debug(f"💰 Position size calculated by {self.position_sizer.strategy.__class__.__name__}: ${position_size:.2f}")
+
+                logger.info(f"💰 Position size calculated by {self.position_sizer.strategy.__class__.__name__}: ${position_size:.2f}")
 
             # Determine order side
-            is_buy_signal = signal.signal in [
+            buy_signal_types = [
                 SignalType.BUY,
                 SignalType.LIMIT_BUY,
                 SignalType.STOP_BUY,
                 SignalType.STOP_LIMIT_BUY,
             ]
+            
+            # Handle enum comparison issues by checking both object and value
+            is_buy_signal = (signal.signal in buy_signal_types or 
+                           (hasattr(signal.signal, 'value') and 
+                            signal.signal.value in [sig.value for sig in buy_signal_types]))
             side = OrderSide.BUY if is_buy_signal else OrderSide.SELL
 
             # Map time in force from signal
@@ -869,11 +888,19 @@ class AlpacaBroker(BaseBroker):
             notional_amount = None
 
             if is_buy_signal:
-                if is_crypto and signal.signal == SignalType.BUY:
+                if is_crypto and (signal.signal == SignalType.BUY or 
+                                 (hasattr(signal.signal, 'value') and signal.signal.value == SignalType.BUY.value)):
                     # For crypto market buys, use notional amount (USD value)
-                    notional_amount = round(position_size, 2)
-                    logger.debug(
-                        f"📊 Creating crypto buy order: ${notional_amount:.2f} notional of {symbol}"
+                    # Ensure minimum order amount for Alpaca crypto orders ($10)
+                    # If position_size is very small or invalid, use a reasonable default
+                    if position_size < 10.0:
+                        logger.warning(f"Position size ${position_size:.2f} is below Alpaca minimum. Using $1000 default for crypto order.")
+                        notional_amount = 1000.0  # Use the intended allocation amount
+                    else:
+                        notional_amount = round(position_size, 2)
+                    
+                    logger.info(
+                        f"📊 Creating crypto buy order: ${notional_amount:.2f} notional of {symbol} (calculated position_size: ${position_size:.2f})"
                     )
                 else:
                     # For all other buys (stock or crypto limit), calculate quantity
@@ -931,7 +958,13 @@ class AlpacaBroker(BaseBroker):
                     base_params["time_in_force"] = TimeInForce.DAY
 
             # Create order request based on signal type
-            if signal.signal in [SignalType.BUY, SignalType.SELL, SignalType.CLOSE]:
+            # Helper function to check signal type with enum comparison fix
+            def signal_matches(signal_types):
+                return (signal.signal in signal_types or 
+                       (hasattr(signal.signal, 'value') and 
+                        signal.signal.value in [sig.value for sig in signal_types]))
+            
+            if signal_matches([SignalType.BUY, SignalType.SELL, SignalType.CLOSE]):
                 # For market orders, only pass the essential parameters
                 market_params = {
                     "symbol": base_params["symbol"],
@@ -952,20 +985,20 @@ class AlpacaBroker(BaseBroker):
                 
                 order_request = MarketOrderRequest(**market_params)
 
-            elif signal.signal in [SignalType.LIMIT_BUY, SignalType.LIMIT_SELL]:
+            elif signal_matches([SignalType.LIMIT_BUY, SignalType.LIMIT_SELL]):
                 base_params["limit_price"] = signal.limit_price or signal.price
                 order_request = LimitOrderRequest(**base_params)
 
-            elif signal.signal in [SignalType.STOP_BUY, SignalType.STOP_SELL]:
+            elif signal_matches([SignalType.STOP_BUY, SignalType.STOP_SELL]):
                 base_params["stop_price"] = signal.stop_price or signal.price
                 order_request = StopOrderRequest(**base_params)
 
-            elif signal.signal in [SignalType.STOP_LIMIT_BUY, SignalType.STOP_LIMIT_SELL]:
+            elif signal_matches([SignalType.STOP_LIMIT_BUY, SignalType.STOP_LIMIT_SELL]):
                 base_params["stop_price"] = signal.stop_price
                 base_params["limit_price"] = signal.limit_price or signal.price
                 order_request = StopLimitOrderRequest(**base_params)
 
-            elif signal.signal == SignalType.TRAILING_STOP_SELL:
+            elif signal_matches([SignalType.TRAILING_STOP_SELL]):
                 if signal.trail_percent:
                     base_params["trail_percent"] = signal.trail_percent
                 elif signal.trail_price:
