@@ -280,13 +280,14 @@ class LiveSignalExtractor:
     Extracts live trading signals from backtesting.py strategies
     """
 
-    def __init__(self, strategy_class, min_bars_required: int = 2, **strategy_params):
+    def __init__(self, strategy_class, min_bars_required: int = 2, enable_position_tracking: bool = True, **strategy_params):
         """
         Initialize with a strategy class and its parameters
 
         Args:
             strategy_class: A SignalExtractorStrategy subclass
             min_bars_required: Minimum number of bars needed for signal extraction
+            enable_position_tracking: Whether to track position state and adjust signals accordingly
             **strategy_params: Parameters to pass to the strategy
         """
         if not BACKTESTING_AVAILABLE:
@@ -299,6 +300,7 @@ class LiveSignalExtractor:
         self.strategy_class = strategy_class
         self.strategy_params = strategy_params
         self.min_bars_required = min_bars_required
+        self.enable_position_tracking = enable_position_tracking
         self.last_signal = None
         
         # Track position state across signal extractions
@@ -382,10 +384,12 @@ class LiveSignalExtractor:
                     )
             
             # Override signal based on actual position state for live trading BEFORE updating position state
-            adjusted_signal = self._adjust_signal_for_position_state(current_signal)
-            
-            # Update position state based on the adjusted signal
-            self._update_position_state(adjusted_signal)
+            if self.enable_position_tracking:
+                adjusted_signal = self._adjust_signal_for_position_state(current_signal)
+                # Update position state based on the adjusted signal
+                self._update_position_state(adjusted_signal)
+            else:
+                adjusted_signal = current_signal
 
             self.last_signal = adjusted_signal
 
