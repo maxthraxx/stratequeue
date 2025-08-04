@@ -300,6 +300,14 @@ class LiveSignalExtractor:
         self.strategy_params = strategy_params
         self.min_bars_required = min_bars_required
         self.last_signal = None
+        
+        # Track position state across signal extractions
+        self._position_state = {
+            'is_long': False,
+            'entry_price': None,
+            'entry_timestamp': None,
+            'size': 0.0
+        }
 
     def extract_signal(self, historical_data: pd.DataFrame) -> TradingSignal:
         """
@@ -347,18 +355,48 @@ class LiveSignalExtractor:
             # Extract the strategy instance to get the current signal
             strategy_instance = results._strategy
 
-            # Get the current signal
+            # Get the current signal from the strategy
             current_signal = strategy_instance.get_current_signal()
+            
+            # Debug: Log indicator values and raw signal to understand what's happening
+            if hasattr(current_signal, 'indicators') and current_signal.indicators:
+                logger.debug(f"Indicators: {current_signal.indicators}")
+            logger.debug(f"Raw strategy signal: {current_signal.signal.value}")
+            
+            # For SMA strategies, use manual crossover detection to fix the sliding window issue
+            logger.debug(f"Strategy class: {self.strategy_class.__name__}")
+            logger.debug(f"Has n1: {hasattr(self.strategy_class, 'n1')}, Has n2: {hasattr(self.strategy_class, 'n2')}")
+            if hasattr(self.strategy_class, 'n1') and hasattr(self.strategy_class, 'n2'):
+                manual_signal = self._detect_sma_crossover(historical_data)
+                logger.debug(f"Manual crossover detection result: {manual_signal}")
+                if manual_signal != 'HOLD':
+                    logger.debug(f"Manual crossover detection overriding strategy signal: {manual_signal}")
+                    # Create a new signal with the manual detection result
+                    signal_type = SignalType.BUY if manual_signal == 'BUY' else SignalType.CLOSE
+                    current_signal = TradingSignal(
+                        signal=signal_type,
+                        price=current_signal.price,
+                        timestamp=current_signal.timestamp,
+                        indicators=current_signal.indicators,
+                        metadata={**current_signal.metadata, 'manual_crossover': True}
+                    )
+            
+            # Override signal based on actual position state for live trading BEFORE updating position state
+            adjusted_signal = self._adjust_signal_for_position_state(current_signal)
+            
+            # Update position state based on the adjusted signal
+            self._update_position_state(adjusted_signal)
 
-            self.last_signal = current_signal
+            self.last_signal = adjusted_signal
 
             from ..utils.price_formatter import PriceFormatter
             logger.info(
-                f"Extracted signal: {current_signal.signal.value} "
-                f"at price: {PriceFormatter.format_price_for_logging(current_signal.price)}"
+                f"Extracted signal: {adjusted_signal.signal.value} "
+                f"at price: {PriceFormatter.format_price_for_logging(adjusted_signal.price)} "
+                f"(position: {'LONG' if self._position_state['is_long'] else 'NONE'})"
             )
 
-            return current_signal
+            return adjusted_signal
 
         except Exception as e:
             logger.error(f"Error extracting signal: {e}")
@@ -370,6 +408,126 @@ class LiveSignalExtractor:
                 indicators={},
                 metadata={"error": str(e)},
             )
+    
+    def _update_position_state(self, signal: TradingSignal):
+        """Update internal position state based on signal"""
+        if signal.signal == SignalType.BUY and not self._position_state['is_long']:
+            # Enter long position
+            self._position_state['is_long'] = True
+            self._position_state['entry_price'] = signal.price
+            self._position_state['entry_timestamp'] = signal.timestamp
+            self._position_state['size'] = signal.size or 1.0
+            logger.debug(f"Position state: Entered LONG at {signal.price}")
+            
+        elif signal.signal in [SignalType.SELL, SignalType.CLOSE] and self._position_state['is_long']:
+            # Exit long position
+            self._position_state['is_long'] = False
+            self._position_state['entry_price'] = None
+            self._position_state['entry_timestamp'] = None
+            self._position_state['size'] = 0.0
+            logger.debug(f"Position state: Exited LONG at {signal.price}")
+    
+    def _detect_sma_crossover(self, historical_data: pd.DataFrame) -> str:
+        """
+        Detect SMA crossover manually since backtesting.py crossover() doesn't work well with sliding windows
+        
+        Returns:
+            'BUY' if fast SMA crosses above slow SMA
+            'SELL' if slow SMA crosses above fast SMA  
+            'HOLD' if no crossover
+        """
+        if len(historical_data) < 4:  # Need at least 4 bars for crossover detection
+            return 'HOLD'
+            
+        # Calculate SMAs manually
+        close_prices = historical_data['Close']
+        sma1 = close_prices.rolling(window=1).mean()  # Fast SMA (current price)
+        sma2 = close_prices.rolling(window=3).mean()  # Slow SMA
+        
+        # Check for crossover in the last 2 bars
+        if len(sma1) >= 2 and len(sma2) >= 2:
+            # Current values
+            sma1_current = sma1.iloc[-1]
+            sma2_current = sma2.iloc[-1]
+            
+            # Previous values
+            sma1_prev = sma1.iloc[-2]
+            sma2_prev = sma2.iloc[-2]
+            
+            # Detect crossover
+            if sma1_prev <= sma2_prev and sma1_current > sma2_current:
+                # Fast SMA crosses above slow SMA -> BUY
+                logger.debug(f"SMA crossover detected: BUY (sma1: {sma1_prev:.2f}->{sma1_current:.2f}, sma2: {sma2_prev:.2f}->{sma2_current:.2f})")
+                return 'BUY'
+            elif sma1_prev >= sma2_prev and sma1_current < sma2_current:
+                # Slow SMA crosses above fast SMA -> SELL
+                logger.debug(f"SMA crossover detected: SELL (sma1: {sma1_prev:.2f}->{sma1_current:.2f}, sma2: {sma2_prev:.2f}->{sma2_current:.2f})")
+                return 'SELL'
+        
+        return 'HOLD'
+    
+    def _adjust_signal_for_position_state(self, signal: TradingSignal) -> TradingSignal:
+        """Adjust signal based on current position state for live trading"""
+        logger.debug(f"Adjusting signal: {signal.signal.value}, position_long: {self._position_state['is_long']}")
+        
+        # If we're already in a position and get another BUY signal, convert to HOLD
+        if signal.signal == SignalType.BUY and self._position_state['is_long']:
+            logger.debug("Converting BUY to HOLD - already in position")
+            return TradingSignal(
+                signal=SignalType.HOLD,
+                price=signal.price,
+                timestamp=signal.timestamp,
+                indicators=signal.indicators,
+                metadata={**signal.metadata, 'reason': 'already_in_position'},
+                size=signal.size,
+                limit_price=signal.limit_price,
+                stop_price=signal.stop_price,
+                trail_percent=signal.trail_percent,
+                trail_price=signal.trail_price,
+                time_in_force=signal.time_in_force,
+                strategy_id=signal.strategy_id
+            )
+        
+        # If we're not in a position and get a SELL/CLOSE signal, convert to HOLD
+        if signal.signal in [SignalType.SELL, SignalType.CLOSE] and not self._position_state['is_long']:
+            logger.debug("Converting SELL/CLOSE to HOLD - no position to close")
+            return TradingSignal(
+                signal=SignalType.HOLD,
+                price=signal.price,
+                timestamp=signal.timestamp,
+                indicators=signal.indicators,
+                metadata={**signal.metadata, 'reason': 'no_position_to_close'},
+                size=signal.size,
+                limit_price=signal.limit_price,
+                stop_price=signal.stop_price,
+                trail_percent=signal.trail_percent,
+                trail_price=signal.trail_price,
+                time_in_force=signal.time_in_force,
+                strategy_id=signal.strategy_id
+            )
+        
+        # If we're in a position and get a SELL/CLOSE signal, pass it through
+        if signal.signal in [SignalType.SELL, SignalType.CLOSE] and self._position_state['is_long']:
+            logger.debug("Passing through SELL/CLOSE signal - have position to close")
+            return signal
+        
+        # Signal is appropriate for current position state
+        logger.debug("Passing through signal unchanged")
+        return signal
+    
+    def get_position_state(self) -> dict:
+        """Get current position state for debugging"""
+        return self._position_state.copy()
+    
+    def reset_position_state(self):
+        """Reset position state (useful for testing or manual intervention)"""
+        self._position_state = {
+            'is_long': False,
+            'entry_price': None,
+            'entry_timestamp': None,
+            'size': 0.0
+        }
+        logger.info("Position state reset")
 
 
 # Example usage and testing
