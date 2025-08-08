@@ -52,8 +52,17 @@ def to_alpaca_pair(symbol: str, base: str = DEFAULT_BASE_CURRENCY) -> str:
     if "/" in symbol_up:
         return symbol_up
 
-    if is_alpaca_crypto(symbol_up):
-        return f"{symbol_up}/{base.upper()}"
+    # Handle symbols that already include base currency suffix (e.g., "DOGEUSD", "ETHUSDT")
+    # Strip common base currency suffixes
+    base_suffixes = ["USD", "USDT", "USDC"]
+    clean_symbol = symbol_up
+    for suffix in base_suffixes:
+        if symbol_up.endswith(suffix):
+            clean_symbol = symbol_up[:-len(suffix)]
+            break
+
+    if is_alpaca_crypto(clean_symbol):
+        return f"{clean_symbol}/{base.upper()}"
 
     # Not a supported crypto – return unchanged
     return symbol_up 

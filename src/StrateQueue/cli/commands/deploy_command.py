@@ -377,12 +377,10 @@ class DeployCommand(BaseCommand):
                     # Dollar allocation - use FixedDollarSizing
                     from ...core.position_sizer import FixedDollarSizing, PositionSizer
                     position_sizer = PositionSizer(FixedDollarSizing(allocation_value))
-                    print(f"💰 Using fixed dollar allocation: ${allocation_value:.2f} per trade")
                 else:
                     # Percentage allocation - use PercentOfCapitalSizing
                     from ...core.position_sizer import PercentOfCapitalSizing, PositionSizer
                     position_sizer = PositionSizer(PercentOfCapitalSizing(allocation_value))
-                    print(f"💰 Using percentage allocation: {allocation_value*100:.1f}% of capital per trade")
 
             # Initialize single strategy system
             system = LiveTradingSystem(

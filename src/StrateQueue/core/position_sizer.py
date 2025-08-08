@@ -76,7 +76,7 @@ class FixedDollarSizing(PositionSizingStrategy):
 class PercentOfCapitalSizing(PositionSizingStrategy):
     """Percentage of available capital per trade"""
 
-    def __init__(self, percentage: float = 0.1, max_amount: float = 1000.0):
+    def __init__(self, percentage: float = 0.1, max_amount: float | None = None):
         """
         Initialize percent of capital sizing
 
@@ -108,8 +108,11 @@ class PercentOfCapitalSizing(PositionSizingStrategy):
             available_capital = kwargs.get("account_value", 10000.0)
             position_size = available_capital * self.percentage
 
-        # Apply maximum limit
-        return min(position_size, self.max_amount)
+        # Apply maximum limit only if specified
+        if self.max_amount is not None:
+            position_size = min(position_size, self.max_amount)
+        
+        return position_size
 
 
 class VolatilityBasedSizing(PositionSizingStrategy):

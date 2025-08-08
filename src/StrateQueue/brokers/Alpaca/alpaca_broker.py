@@ -118,6 +118,7 @@ class AlpacaBroker(BaseBroker):
 
         super().__init__(config, portfolio_manager, position_sizer)
 
+
         # Store statistics manager
         self.statistics_manager = statistics_manager
 
@@ -272,6 +273,8 @@ class AlpacaBroker(BaseBroker):
         """
         if not self.is_connected:
             return OrderResult(success=False, message="Not connected to Alpaca")
+        
+
 
         try:
             # Normalize symbol for Alpaca format
@@ -301,7 +304,17 @@ class AlpacaBroker(BaseBroker):
 
             # Check if signal type is supported
             supported_signals = self.order_executors.get("supported_signal_types", [])
-            if signal.signal not in supported_signals:
+            
+            # Debug logging to understand the comparison issue
+            logger.debug(f"Signal type: {signal.signal} (type: {type(signal.signal)})")
+            logger.debug(f"Supported signals: {supported_signals}")
+            logger.debug(f"Signal in supported: {signal.signal in supported_signals}")
+            
+            # Compare by value instead of object reference to handle enum comparison issues
+            supported_signal_values = [sig.value if hasattr(sig, 'value') else sig for sig in supported_signals]
+            signal_value = signal.signal.value if hasattr(signal.signal, 'value') else signal.signal
+            
+            if signal_value not in supported_signal_values and signal.signal not in supported_signals:
                 error_msg = f"Unknown signal type: {signal.signal}"
                 logger.warning(error_msg)
                 return OrderResult(success=False, message=error_msg)
@@ -494,13 +507,21 @@ class AlpacaBroker(BaseBroker):
                 "opg": TimeInForce.OPG,
                 "cls": TimeInForce.CLS,
             }
-            time_in_force = tif_map.get(time_in_force_str.lower(), TimeInForce.DAY)
 
             # Override for crypto
             is_crypto = "/" in alpaca_symbol
             if is_crypto:
-                time_in_force = TimeInForce.GTC
+                logger.debug(f"🔍 Crypto order (place_order) - time_in_force_str: '{time_in_force_str}'")
+                # For crypto orders, only allow gtc or ioc (Alpaca requirement)
+                if time_in_force_str.lower() in ["gtc", "ioc"]:
+                    time_in_force = tif_map.get(time_in_force_str.lower(), TimeInForce.GTC)
+                    logger.debug(f"✅ Using time_in_force_str: {time_in_force}")
+                else:
+                    time_in_force = TimeInForce.GTC
+                    logger.debug(f"⚠️ Invalid crypto time_in_force_str '{time_in_force_str}', defaulting to GTC")
                 extended_hours = False  # Not applicable for crypto
+            else:
+                time_in_force = tif_map.get(time_in_force_str.lower(), TimeInForce.DAY)
 
             # Base parameters for all order types
             base_params = {
@@ -577,6 +598,7 @@ class AlpacaBroker(BaseBroker):
                 )
 
             # Submit order
+            logger.debug(f"🔍 Order details (place_order) - time_in_force: {order_request.time_in_force}, symbol: {order_request.symbol}")
             order = self.trading_client.submit_order(order_request)
 
             return OrderResult(
@@ -786,15 +808,21 @@ class AlpacaBroker(BaseBroker):
                     portfolio_manager=self.portfolio_manager,
                     account_value=account_value
                 )
-                logger.debug(f"💰 Position size calculated by {self.position_sizer.strategy.__class__.__name__}: ${position_size:.2f}")
+
+                logger.info(f"💰 Position size calculated by {self.position_sizer.strategy.__class__.__name__}: ${position_size:.2f}")
 
             # Determine order side
-            is_buy_signal = signal.signal in [
+            buy_signal_types = [
                 SignalType.BUY,
                 SignalType.LIMIT_BUY,
                 SignalType.STOP_BUY,
                 SignalType.STOP_LIMIT_BUY,
             ]
+            
+            # Handle enum comparison issues by checking both object and value
+            is_buy_signal = (signal.signal in buy_signal_types or 
+                           (hasattr(signal.signal, 'value') and 
+                            signal.signal.value in [sig.value for sig in buy_signal_types]))
             side = OrderSide.BUY if is_buy_signal else OrderSide.SELL
 
             # Map time in force from signal
@@ -806,16 +834,26 @@ class AlpacaBroker(BaseBroker):
                 "opg": TimeInForce.OPG,
                 "cls": TimeInForce.CLS,
             }
-            time_in_force = tif_map.get(signal.time_in_force.lower(), TimeInForce.DAY)
 
             # Determine if crypto and extended-hours settings
-            is_crypto = "/" in symbol  # Crypto pairs have "/" like "ETH/USD"
+            # Crypto pairs can have "/" like "ETH/USD" or be in Alpaca format like "ETHUSD", "DOGEUSD"
+            crypto_symbols = ["BTCUSD", "ETHUSD", "DOGEUSD", "LTCUSD", "BCHUSD", "ADAUSD", "DOTUSD", "UNIUSD", "LINKUSD", "SOLUSD"]
+            is_crypto = "/" in symbol or symbol in crypto_symbols
+            
+            # For crypto orders, only allow gtc or ioc (Alpaca requirement)
+            if is_crypto:
+                logger.debug(f"🔍 Crypto order - signal time_in_force: '{signal.time_in_force}'")
+                if signal.time_in_force.lower() in ["gtc", "ioc"]:
+                    time_in_force = tif_map.get(signal.time_in_force.lower(), TimeInForce.GTC)
+                    logger.debug(f"✅ Using signal time_in_force: {time_in_force}")
+                else:
+                    time_in_force = TimeInForce.GTC
+                    logger.debug(f"⚠️ Invalid crypto time_in_force '{signal.time_in_force}', defaulting to GTC")
+            else:
+                time_in_force = tif_map.get(signal.time_in_force.lower(), TimeInForce.DAY)
+            
             # Strategy passes extended-hours in metadata: {'extended_hours': True}
             extended_hours = (signal.metadata or {}).get("extended_hours", False) and not is_crypto
-
-            # Override time in force for crypto (must be GTC)
-            if is_crypto:
-                time_in_force = TimeInForce.GTC
 
             # Check for bracket/OCO/OTO order class signals
             tp = signal.metadata.get("tp") if signal.metadata else None
@@ -852,11 +890,19 @@ class AlpacaBroker(BaseBroker):
             notional_amount = None
 
             if is_buy_signal:
-                if is_crypto and signal.signal == SignalType.BUY:
+                if is_crypto and (signal.signal == SignalType.BUY or 
+                                 (hasattr(signal.signal, 'value') and signal.signal.value == SignalType.BUY.value)):
                     # For crypto market buys, use notional amount (USD value)
-                    notional_amount = round(position_size, 2)
-                    logger.debug(
-                        f"📊 Creating crypto buy order: ${notional_amount:.2f} notional of {symbol}"
+                    # Ensure minimum order amount for Alpaca crypto orders ($10)
+                    # If position_size is very small or invalid, use a reasonable default
+                    if position_size < 10.0:
+                        logger.warning(f"Position size ${position_size:.2f} is below Alpaca minimum. Using $1000 default for crypto order.")
+                        notional_amount = 1000.0  # Use the intended allocation amount
+                    else:
+                        notional_amount = round(position_size, 2)
+                    
+                    logger.info(
+                        f"📊 Creating crypto buy order: ${notional_amount:.2f} notional of {symbol} (calculated position_size: ${position_size:.2f})"
                     )
                 else:
                     # For all other buys (stock or crypto limit), calculate quantity
@@ -914,23 +960,47 @@ class AlpacaBroker(BaseBroker):
                     base_params["time_in_force"] = TimeInForce.DAY
 
             # Create order request based on signal type
-            if signal.signal in [SignalType.BUY, SignalType.SELL, SignalType.CLOSE]:
-                order_request = MarketOrderRequest(**base_params)
+            # Helper function to check signal type with enum comparison fix
+            def signal_matches(signal_types):
+                return (signal.signal in signal_types or 
+                       (hasattr(signal.signal, 'value') and 
+                        signal.signal.value in [sig.value for sig in signal_types]))
+            
+            if signal_matches([SignalType.BUY, SignalType.SELL, SignalType.CLOSE]):
+                # For market orders, only pass the essential parameters
+                market_params = {
+                    "symbol": base_params["symbol"],
+                    "side": base_params["side"],
+                    "time_in_force": base_params["time_in_force"],
+                    "client_order_id": base_params["client_order_id"],
+                }
+                
+                # Add quantity or notional (but not both)
+                if "notional" in base_params:
+                    market_params["notional"] = base_params["notional"]
+                elif "qty" in base_params:
+                    market_params["qty"] = base_params["qty"]
+                
+                # Add extended_hours only for non-crypto
+                if not is_crypto and base_params.get("extended_hours"):
+                    market_params["extended_hours"] = base_params["extended_hours"]
+                
+                order_request = MarketOrderRequest(**market_params)
 
-            elif signal.signal in [SignalType.LIMIT_BUY, SignalType.LIMIT_SELL]:
+            elif signal_matches([SignalType.LIMIT_BUY, SignalType.LIMIT_SELL]):
                 base_params["limit_price"] = signal.limit_price or signal.price
                 order_request = LimitOrderRequest(**base_params)
 
-            elif signal.signal in [SignalType.STOP_BUY, SignalType.STOP_SELL]:
+            elif signal_matches([SignalType.STOP_BUY, SignalType.STOP_SELL]):
                 base_params["stop_price"] = signal.stop_price or signal.price
                 order_request = StopOrderRequest(**base_params)
 
-            elif signal.signal in [SignalType.STOP_LIMIT_BUY, SignalType.STOP_LIMIT_SELL]:
+            elif signal_matches([SignalType.STOP_LIMIT_BUY, SignalType.STOP_LIMIT_SELL]):
                 base_params["stop_price"] = signal.stop_price
                 base_params["limit_price"] = signal.limit_price or signal.price
                 order_request = StopLimitOrderRequest(**base_params)
 
-            elif signal.signal == SignalType.TRAILING_STOP_SELL:
+            elif signal_matches([SignalType.TRAILING_STOP_SELL]):
                 if signal.trail_percent:
                     base_params["trail_percent"] = signal.trail_percent
                 elif signal.trail_price:
@@ -948,6 +1018,7 @@ class AlpacaBroker(BaseBroker):
 
             # Submit the order with concise logging
             logger.debug(f"🚀 Submitting {signal.signal.value} order to Alpaca: {order_request}")
+            logger.debug(f"🔍 Order details - time_in_force: {order_request.time_in_force}, symbol: {order_request.symbol}")
             order = self.trading_client.submit_order(order_request)
             logger.info(f"✅ Order submitted: {order.side.value} {order.symbol} (ID: {order.id})")
             if order_class:

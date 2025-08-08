@@ -151,6 +151,16 @@ def test_percent_of_capital_multi_strategy():
     assert result == pytest.approx(600.0)
 
 
+def test_percent_of_capital_no_artificial_limit():
+    """Test that percentage allocations work without artificial limits when max_amount is None"""
+    pm = _PMStub(available_capital=80_000)
+    strat = PercentOfCapitalSizing(percentage=0.8)  # 80% allocation, no max_amount limit
+    sizer = PositionSizer(strat)
+
+    result = sizer.get_position_size("s1", "AAPL", _signal(), price=100.0, portfolio_manager=pm)
+    assert result == pytest.approx(64_000.0)  # 80% of $80k = $64k, not capped at $1k
+
+
 # ---------------------------------------------------------------------------
 # R5 – VolatilityBasedSizing
 # ---------------------------------------------------------------------------

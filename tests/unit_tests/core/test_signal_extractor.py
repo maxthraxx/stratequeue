@@ -141,7 +141,7 @@ def test_signal_type_propagation(monkeypatch):
             def __init__(self):
                 super().__init__(stype)
 
-        sig = LiveSignalExtractor(_S).extract_signal(_slice(10))
+        sig = LiveSignalExtractor(_S, enable_position_tracking=False).extract_signal(_slice(10))
         assert sig.signal is stype
 
 

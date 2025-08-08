@@ -106,6 +106,7 @@ class AlpacaDataIngestion(BaseDataIngestion):
         self.paper = paper
         self.is_crypto = is_crypto
         self.default_granularity = granularity
+        self._crypto_detected = False  # Track if we've auto-detected crypto mode
 
         # Map StrateQueue granularities → Alpaca TimeFrame enum
         # The alpaca-py TimeFrame enum uses names like Minute, Minute5, Minute15, Minute30, Hour, Day, Week, etc.
@@ -141,30 +142,36 @@ class AlpacaDataIngestion(BaseDataIngestion):
             )
             raise ValueError(msg)
 
-        # Clients ----------------------------------------------------
+        # Initialize clients based on crypto mode
+        self._hist_client = None
+        self._stream = None
+        self._feed_enum = None
+        self._initialize_clients()
+
+    def _initialize_clients(self):
+        """Initialize Alpaca clients based on current crypto mode"""
         if self.is_crypto:
             if CryptoHistoricalDataClient is None or CryptoDataStream is None:
                 raise ImportError("Crypto feed not available in installed alpaca-py")
-            self._hist_client = CryptoHistoricalDataClient(api_key, secret_key)
+            self._hist_client = CryptoHistoricalDataClient(self.api_key, self.secret_key)
             feed = "us"  # default crypto feed label – Alpaca only offers one
-            self._stream: CryptoDataStream = CryptoDataStream(api_key, secret_key, feed=feed)  # type: ignore
+            self._stream: CryptoDataStream = CryptoDataStream(self.api_key, self.secret_key, feed=feed)  # type: ignore
         else:
             # Choose IEX (free/paper) or SIP (live) feed explicitly
-            feed_enum = DataFeed.IEX if paper else DataFeed.SIP
+            feed_enum = DataFeed.IEX if self.paper else DataFeed.SIP
 
             # Store for later use in _build_bars_request
             self._feed_enum = feed_enum
 
             # Historical client – feed handled at request level, SDK ctor has no 'feed' param.
-            self._hist_client = StockHistoricalDataClient(api_key, secret_key)
+            self._hist_client = StockHistoricalDataClient(self.api_key, self.secret_key)
 
             if StockDataStream is None:
                 raise ImportError(
                     "alpaca-py installed without streaming support. "
                     "Install with: pip install 'alpaca-py[async]'"
                 )
-            self._stream: StockDataStream = StockDataStream(api_key, secret_key, feed=feed_enum)  # type: ignore
-            feed = feed_enum.value  # For logging clarity
+            self._stream: StockDataStream = StockDataStream(self.api_key, self.secret_key, feed=feed_enum)  # type: ignore
 
         # Prepare reusable bar handler
         async def _handle_bar(bar):  # noqa: N802 – callback sig
@@ -191,12 +198,23 @@ class AlpacaDataIngestion(BaseDataIngestion):
         self._stream_task: Optional[asyncio.Task] = None
 
         logger.info(
-            "AlpacaDataIngestion initialised (paper=%s, crypto=%s, granularity=%s, feed=%s)",
-            paper,
-            is_crypto,
-            granularity,
-            feed,
+            "AlpacaDataIngestion initialised (paper=%s, crypto=%s, granularity=%s)",
+            self.paper,
+            self.is_crypto,
+            self.default_granularity,
         )
+
+    def _ensure_crypto_mode(self, symbol: str):
+        """Auto-detect and switch to crypto mode if needed"""
+        if not self.is_crypto and not self._crypto_detected:
+            from ...utils.crypto_pairs import is_alpaca_crypto
+            # Handle both "DOGE" and "DOGEUSD" formats
+            clean_symbol = symbol.upper().replace('USD', '').replace('USDT', '').replace('USDC', '')
+            if is_alpaca_crypto(clean_symbol):
+                logger.info(f"Auto-detected crypto symbol {symbol}, switching to crypto mode")
+                self.is_crypto = True
+                self._crypto_detected = True
+                self._initialize_clients()
 
     def is_running(self) -> bool:
         """Check if the real-time feed is currently running"""
@@ -240,13 +258,24 @@ class AlpacaDataIngestion(BaseDataIngestion):
             )
         tf_enum = self._tf_map[granularity]
 
+        # Auto-detect crypto mode if needed
+        self._ensure_crypto_mode(symbol)
+
+        # Normalize symbol for crypto if needed
+        if self.is_crypto:
+            from ...utils.crypto_pairs import to_alpaca_pair
+            # Convert symbols like "DOGEUSD" to "DOGE/USD" format
+            normalized_symbol = to_alpaca_pair(symbol)
+        else:
+            normalized_symbol = symbol
+
         end = datetime.now(timezone.utc)
         start = end - timedelta(days=days_back)
 
         # Wrap sync SDK call in thread executor to avoid blocking event loop
         def _download():
             # Build request object for new API
-            request = self._build_bars_request(symbol, tf_enum, start, end)
+            request = self._build_bars_request(normalized_symbol, tf_enum, start, end)
             
             if self.is_crypto:
                 bars = self._hist_client.get_crypto_bars(request)
@@ -257,7 +286,7 @@ class AlpacaDataIngestion(BaseDataIngestion):
 
         df: pd.DataFrame = await asyncio.to_thread(_download)
         if df.empty:
-            logger.warning("Alpaca returned no data for %s (%s)", symbol, granularity)
+            logger.warning("Alpaca returned no data for %s (%s)", normalized_symbol, granularity)
             return df
 
         # Normalise columns ------------------------------------------------
@@ -306,13 +335,24 @@ class AlpacaDataIngestion(BaseDataIngestion):
     async def subscribe_to_symbol(self, symbol: str):
         """Subscribe to live bars for *symbol*. Must be awaited."""
         try:
+            # Auto-detect crypto mode if needed
+            self._ensure_crypto_mode(symbol)
+            
+            # Normalize symbol for crypto if needed
+            if self.is_crypto:
+                from ...utils.crypto_pairs import to_alpaca_pair
+                # Convert symbols like "DOGEUSD" to "DOGE/USD" format
+                normalized_symbol = to_alpaca_pair(symbol)
+            else:
+                normalized_symbol = symbol
+                
             sub_func = self._stream.subscribe_bars
             if asyncio.iscoroutinefunction(sub_func):
-                await sub_func(self._on_bar, symbol)
+                await sub_func(self._on_bar, normalized_symbol)
             else:
                 # Synchronous subscribe
-                sub_func(self._on_bar, symbol)
-            logger.debug("Alpaca subscribed to %s", symbol)
+                sub_func(self._on_bar, normalized_symbol)
+            logger.debug("Alpaca subscribed to %s", normalized_symbol)
         except Exception as e:
             logger.error(f"Failed to subscribe to {symbol}: {e}")
             raise
